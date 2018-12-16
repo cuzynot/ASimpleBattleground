@@ -6,30 +6,32 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
 
-public class Camera implements KeyListener, MouseMotionListener{
+public class Player implements KeyListener, MouseMotionListener{
 
-	public double xPos, yPos, // player positions
-	xDir, yDir, // player directions vectors
-	xPlane, yPlane; // farthest edge of the camera's view
+	private double xPos, yPos; // player positions
+	private double xDir, yDir; // player directions vectors
+	private double xPlane, yPlane; // farthest edge of the camera's view
 
-	public boolean left, right, forward, back; // keys pressed
-	public double speed = 0.05;
-	public double rotation = 0.05;
-
-	int prevx = 100;
-	int prevy;
+	private boolean left, right, forward, back; // keys pressed
+	private double speed = 0.07;
+	private double rotation = 0.05;
 
 	Robot robot;
 	boolean inGame = true;
+	
+	private int screenWidth;
+	private int screenHeight;
 
 	// constructor
-	public Camera (double x, double y, double xd, double yd, double xp, double yp){	
+	public Player (double x, double y, double xd, double yd, double xp, double yp, int sw, int sh){	
 		xPos = x;
 		yPos = y;
 		xDir = xd;
 		yDir = yd;
 		xPlane = xp;
 		yPlane = yp;
+		screenWidth = sw;
+		screenHeight = sh;
 
 		try {
 			robot = new Robot();
@@ -39,8 +41,10 @@ public class Camera implements KeyListener, MouseMotionListener{
 	}
 
 	// Keys
+	@Override
 	public void keyTyped (KeyEvent e){ }
 
+	@Override
 	public void keyPressed (KeyEvent e){
 		int key = e.getKeyCode();
 
@@ -57,6 +61,7 @@ public class Camera implements KeyListener, MouseMotionListener{
 		}
 	}
 
+	@Override
 	public void keyReleased (KeyEvent e){
 		int key = e.getKeyCode();
 
@@ -71,35 +76,58 @@ public class Camera implements KeyListener, MouseMotionListener{
 		}
 	}
 
+	// Mouse motion listener
 	@Override
 	public void mouseDragged(MouseEvent e) {
 	}
 
 	@Override
 	public void mouseMoved(MouseEvent e) {
-
 		if (inGame) {
 			int curx = e.getX();
 
-			if (curx > 305) {
+			if (curx > screenWidth + 10) {
 				right = true;
 				left = false;
-				rotation = -(curx - 305) / 300.0;
-			} else if (curx < 295){
+				rotation = -(curx - screenWidth / 2) / 300.0;
+			} else if (curx < screenWidth - 10){
 				right = false;
 				left = true;
-				rotation = -(curx - 305) / 300.0;
+				rotation = -(curx - screenWidth / 2) / 300.0;
 			} else {
 				right = false;
 				left = false;
 				rotation = 0;
 			}
-			prevx = curx;
 
-			robot.mouseMove(300, 300);
+			robot.mouseMove(screenWidth / 2, screenHeight / 2);
 		}
 	}
+	
+	// getters
+	public double getXPos() {
+		return xPos;
+	}
+	
+	public double getYPos() {
+		return yPos;
+	}
+	
+	public double getXDir() {
+		return xDir;
+	}
+	
+	public double getYDir() {
+		return yDir;
+	}
 
+	public double getXPlane() {
+		return xPlane;
+	}
+	
+	public double getYPlane() {
+		return yPlane;
+	}
 
 	// update camera view
 	public void update(int[][] map) {
@@ -131,16 +159,6 @@ public class Camera implements KeyListener, MouseMotionListener{
 		double oldxPlane = xPlane;
 		xPlane = xPlane * Math.cos(rotation) - yPlane * Math.sin(rotation);
 		yPlane = oldxPlane * Math.sin(rotation) + yPlane * Math.cos(rotation);
-
-		//		if (left){
-		//			double oldxDir=xDir;
-		//			xDir = xDir * Math.cos(rotationSpeed) - yDir * Math.sin(rotationSpeed);
-		//			yDir = oldxDir * Math.sin(rotationSpeed) + yDir * Math.cos(rotationSpeed);
-		//
-		//			double oldxPlane = xPlane;
-		//			xPlane = xPlane * Math.cos(rotationSpeed) - yPlane * Math.sin(rotationSpeed);
-		//			yPlane = oldxPlane * Math.sin(rotationSpeed) + yPlane * Math.cos(rotationSpeed);
-		//		}
 	}
 
 }

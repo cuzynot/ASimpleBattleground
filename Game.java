@@ -1,4 +1,3 @@
-
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Graphics;
@@ -10,10 +9,10 @@ import java.awt.image.DataBufferInt;
 
 import javax.swing.JFrame;
 
-import Graphics.Camera;
+import Graphics.Player;
 import Graphics.Screen;
 
-public class Game extends JFrame implements Runnable{
+public class Game extends JFrame {
 
 	// run
 	public static void main (String[] args){
@@ -21,18 +20,14 @@ public class Game extends JFrame implements Runnable{
 	}
 
 	// Camera
-	public Camera camera;
+	private Player camera;
 
 	// Screen
-	public Screen screen;
+	private Screen screen;
 
-	private static final long serialVersionUID = 1L;
-	public int mapWidth = 15;
-	public int mapHeight = 15;
-
-	// game thread
-	private Thread thread;
-	private boolean running;
+	// screen dimensions
+	private int screenWidth;
+	private int screenHeight;
 
 	// images
 	private BufferedImage image;
@@ -56,13 +51,17 @@ public class Game extends JFrame implements Runnable{
 	};
 
 	// constructor
-	public Game (){
-		thread = new Thread(this);
-		image = new BufferedImage(640, 480, BufferedImage.TYPE_INT_RGB);
-		pixels = ((DataBufferInt)image.getRaster().getDataBuffer()).getData();
+	public Game() {
+		toggleCursor(false);
 
+		screenWidth = (int)(Toolkit.getDefaultToolkit().getScreenSize().getWidth());
+		screenHeight = (int)(Toolkit.getDefaultToolkit().getScreenSize().getHeight());
+
+		image = new BufferedImage(screenWidth, screenHeight, BufferedImage.TYPE_INT_RGB);
+		pixels = ((DataBufferInt)image.getRaster().getDataBuffer()).getData();
+		
 		// init jframe
-		setSize(640, 480);
+		setSize(screenWidth, screenHeight);
 		setResizable(false);
 		setTitle("3D Test");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -71,39 +70,46 @@ public class Game extends JFrame implements Runnable{
 		setVisible(true);
 
 		// init Camera
-		camera = new Camera(4.5, 4.5, 1, 0, 0, -0.66);
+		camera = new Player(4.5, 4.5, 1, 0, 0, -0.66, screenWidth, screenHeight);
 		addKeyListener(camera);
 		addMouseMotionListener(camera);
 
 		// init Screen
-		screen = new Screen(map, 640, 480); // screen = new Screen(map, mapWidth, mapHeight, textures, 640, 480);
+		screen = new Screen(map, screenWidth, screenHeight); // screen = new Screen(map, mapWidth, mapHeight, textures, 640, 480);
+		
+		run();
+	}
+	
+	// public methods
 
-
+	public void toggleCursor(boolean solid) {
 		BufferedImage cursorImg = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
+		Cursor cursor;
 
-		// Create a new blank cursor.
-		Cursor blankCursor = Toolkit.getDefaultToolkit().createCustomCursor(cursorImg, new Point(0, 0), "blank cursor");
-		getContentPane().setCursor(blankCursor);
-
-
-		start();
-	}
-
-	// start and stop
-	private synchronized void start() {
-		running = true;
-		thread.start();
-	}
-	public synchronized void stop() {
-		running = false;
-		try {
-			thread.join(); // waits for thread to die
-		} catch(InterruptedException e) {
-			e.printStackTrace();
+		if (solid) {
+			cursor = Toolkit.getDefaultToolkit().createCustomCursor(cursorImg, new Point(1, 1), "default cursor");
+		} else {
+			// Create a new blank cursor.
+			cursor = Toolkit.getDefaultToolkit().createCustomCursor(cursorImg, new Point(0, 0), "blank cursor");
 		}
+		getContentPane().setCursor(cursor);
 	}
 
-	public void render() {
+	// required for implementation
+	private void run() {
+
+		while(true) {
+			camera.update(map);
+			screen.update(camera, pixels);
+
+			render(); //displays to the screen unrestricted time
+		}
+
+	}
+	
+	// private methods
+	
+	private void render() {
 		BufferStrategy bs = getBufferStrategy(); // used when rendering so the screen updates are smoother
 
 		if(bs == null) {
@@ -114,29 +120,5 @@ public class Game extends JFrame implements Runnable{
 		Graphics g = bs.getDrawGraphics();
 		g.drawImage(image, 0, 0, image.getWidth(), image.getHeight(), null);
 		bs.show();
-	}
-
-	// required for implementation
-	public void run() {
-		long last = System.nanoTime();
-		final double ns = 1000000000.0 / 60.0; //60 times per second
-		double delta = 0;
-		requestFocus();
-
-		while(running) {
-			long now = System.nanoTime();
-			delta += ((now - last) / ns);
-			last = now;
-
-			while (delta >= 1){ //Make sure update is only happening 60 times a second
-				//handles all of the logic restricted time
-				camera.update(map);
-				screen.update(camera, pixels);
-				delta--;
-			}
-
-			render(); //displays to the screen unrestricted time
-		}
-
 	}
 }
