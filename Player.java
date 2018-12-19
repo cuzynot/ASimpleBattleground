@@ -17,10 +17,10 @@ public class Player {
 
 	Robot robot;
 	boolean inGame = true;
-	
+
 	private int screenWidth;
 	private int screenHeight;
-	
+
 	private PlayerMouseMotionListener pmml;
 	private PlayerKeyListener pkl;
 	private Game game;
@@ -42,24 +42,24 @@ public class Player {
 		} catch (AWTException e) {
 			e.printStackTrace();
 		}
-		
+
 		pmml = new PlayerMouseMotionListener();
 		pkl = new PlayerKeyListener();
 	}
-	
+
 	// getters
 	public double getX() {
 		return x;
 	}
-	
+
 	public double getY() {
 		return y;
 	}
-	
+
 	public double getXDir() {
 		return xDir;
 	}
-	
+
 	public double getYDir() {
 		return yDir;
 	}
@@ -67,15 +67,15 @@ public class Player {
 	public double getXPlane() {
 		return xPlane;
 	}
-	
+
 	public double getYPlane() {
 		return yPlane;
 	}
-	
+
 	public PlayerMouseMotionListener getMouseMotionListener() {
 		return pmml;
 	}
-	
+
 	public PlayerKeyListener getKeyListener() {
 		return pkl;
 	}
@@ -90,12 +90,12 @@ public class Player {
 		if (left || right) {
 			counter++;
 		}
-		
+
 		// if pressing 2 buttons simultaneously
 		if (counter == 2) {
-			
+
 		}
-		
+
 		if (forward){
 			if (map[(int)(x + xDir * speed)][(int)y] == 0){
 				x += xDir * speed;
@@ -129,7 +129,7 @@ public class Player {
 				y -= xDir * speed / 1.5;
 			}
 		}
-		
+
 
 		// camera rotation
 		double oldxDir = xDir;
@@ -140,7 +140,7 @@ public class Player {
 		xPlane = xPlane * Math.cos(rotation) - yPlane * Math.sin(rotation);
 		yPlane = oldxPlane * Math.sin(rotation) + yPlane * Math.cos(rotation);
 	}
-	
+
 	//----------INNER CLASSES----------//
 	// Mouse motion listener
 	private class PlayerMouseMotionListener implements MouseMotionListener {
@@ -151,21 +151,17 @@ public class Player {
 		@Override
 		public void mouseMoved(MouseEvent e) {
 			if (inGame) {
+				// change rotational value according to how much the mouse has moved
+				// in relation to the center of the screen
 				int curx = e.getX();
+				rotation = -(curx - screenWidth / 2) / 175.0; // 175 is an arbitrary value for tweaking sensitivity
 
-				if (curx > screenWidth / 2 + 10) {
-					rotation = -(curx - screenWidth / 2) / 200.0;
-				} else if (curx < screenWidth - 10){
-					rotation = -(curx - screenWidth / 2) / 200.0;
-				} else {
-					rotation = 0;
-				}
-
+				// use robot to move mouse back to the center of the screen
 				robot.mouseMove(screenWidth / 2, screenHeight / 2);
 			}
 		}
 	}
-	
+
 	// Key Listener
 	private class PlayerKeyListener implements KeyListener {
 		@Override
