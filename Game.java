@@ -1,8 +1,15 @@
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Graphics;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
 import java.awt.Point;
 import java.awt.Toolkit;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
@@ -26,8 +33,8 @@ public class Game extends JFrame {
 	private Display display;
 
 	// screen dimensions
-	private int screenWidth;
-	private int screenHeight;
+	private final int SCREEN_WIDTH;
+	private final int SCREEN_HEIGHT;
 
 	// images
 	private BufferedImage image;
@@ -67,47 +74,53 @@ public class Game extends JFrame {
 		BufferedImage cursorImg = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
 		defaultCursor = Toolkit.getDefaultToolkit().createCustomCursor(cursorImg, new Point(10, 10), "default cursor");
 		blankCursor = Toolkit.getDefaultToolkit().createCustomCursor(cursorImg, new Point(0, 0), "blank cursor");
-		toggleCursor(false);
+		// toggleCursor(false);
 
-		screenWidth = (int)(Toolkit.getDefaultToolkit().getScreenSize().getWidth());
-		screenHeight = (int)(Toolkit.getDefaultToolkit().getScreenSize().getHeight());
+		SCREEN_WIDTH = (int)(Toolkit.getDefaultToolkit().getScreenSize().getWidth());
+		SCREEN_HEIGHT = (int)(Toolkit.getDefaultToolkit().getScreenSize().getHeight());
 
-		image = new BufferedImage(screenWidth, screenHeight, BufferedImage.TYPE_INT_RGB);
+		image = new BufferedImage(SCREEN_WIDTH, SCREEN_HEIGHT, BufferedImage.TYPE_INT_RGB);
 		pixels = ((DataBufferInt)image.getRaster().getDataBuffer()).getData(); // links pixels to image 
 
 		// init JFrame
 		setResizable(false);
 		setTitle("A Simple Battleground");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setExtendedState(JFrame.MAXIMIZED_BOTH); 
-		setUndecorated(true);
 		setVisible(true);
 
+		GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices()[0];
+		gd.setFullScreenWindow(this);
+
 		// init Screen
-		display = new Display(map, screenWidth, screenHeight, color); // screen = new Screen(map, mapWidth, mapHeight, textures, 640, 480);
+		display = new Display(map, SCREEN_WIDTH, SCREEN_HEIGHT, color); // screen = new Screen(map, mapWidth, mapHeight, textures, 640, 480);
 
 		// spawn the player
 		spawnPlayer();
 
 	}
 
+	// public methods
 	public void spawnPlayer() {
 		// init Player
 		int x = 0, y = 0;
 		while (map[x][y] != 0) {
-			x = (int)(Math.random() * mapSize);
-			y = (int)(Math.random() * mapSize);
+			x = (int)(Math.random() * map.length);
+			y = (int)(Math.random() * map[0].length);
 		}
-		player = new Player(x, y, 1, 0, 0, -0.66, screenWidth, screenHeight, this);
-		addKeyListener(player.getKeyListener());
-		addMouseMotionListener(player.getMouseMotionListener());
+
+		player = new Player(x, y, 1, 0, 0, -0.66, SCREEN_WIDTH, SCREEN_HEIGHT);
+		PlayerKeyListener pkl = new PlayerKeyListener();
+		PlayerMouseListener pml = new PlayerMouseListener();
+		addKeyListener(pkl);
+		addMouseMotionListener(pml);
+		addMouseListener(pml);
 
 		// enter game loop
 		run();
 	}
 
-	// public methods
-	public void toggleCursor(boolean solid) {
+	// private methods
+	private void toggleCursor(boolean solid) {
 		Cursor cursor;
 
 		if (solid) {
@@ -129,12 +142,6 @@ public class Game extends JFrame {
 				map[i][j] = (int)(Math.random() * 2) + 1; // either 1 (a wall) or 0 (open)
 			}
 		}
-
-		//		// make sure there's a passage in the middle
-		//		for (int i = 1; i < map.length - 1; i++) {
-		//			map[map.length / 2][i] = 0;
-		//			map[i][map.length / 2] = 0;
-		//		}
 
 		// make sure the exterior are walls
 		for (int i = 0; i < map.length; i++) {
@@ -219,11 +226,11 @@ public class Game extends JFrame {
 
 		while(true) {
 			try {
-				Thread.sleep(10);
+				Thread.sleep(5);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
-			player.update(map);
+			update();
 			display.update(player, pixels);
 
 			render(); //displays to the screen unrestricted time
@@ -231,7 +238,76 @@ public class Game extends JFrame {
 
 	}
 
-	// private methods
+	// update camera view
+	private void update() {
+		// get player variables
+		boolean forward = player.getForward();
+		boolean left = player.getLeft();
+		boolean back = player.getBack();
+		boolean right = player.getRight();
+
+		double x = player.getX();
+		double y = player.getY();
+		double xDir = player.getXDir();
+		double yDir = player.getYDir();
+		double speed = player.getSpeed();
+		double rotation = player.getRotation();
+		double xPlane = player.getXPlane();
+		double yPlane = player.getYPlane();
+
+		// move player
+		if (forward){
+			if (map[(int)(x + xDir * speed)][(int)y] == 0){
+				x += xDir * speed;
+			}
+			if (map[(int)x][(int)(y + yDir * speed)] == 0){
+				y += yDir * speed;
+			}
+		}
+		if (back){
+			if (map[(int)(x - xDir * speed)][(int)y] == 0){
+				x -= xDir * speed;
+			}
+			if (map[(int)x][(int)(y - yDir * speed)] == 0){
+				y -= yDir * speed;
+			}
+		}
+
+		// reduced speed on strafing
+		if (left) {
+			if (map[(int)(x - yDir * speed / 1.5)][(int)(y)] == 0){
+				x -= yDir * speed / 1.5;
+			}
+			if (map[(int)x][(int)(y + xDir * speed / 1.5)] == 0){
+				y += xDir * speed / 1.5;
+			}
+		}
+		if (right) {
+			if (map[(int)(x + yDir * speed / 1.5)][(int)y] == 0){
+				x += yDir * speed / 1.5;
+			}
+			if (map[(int)x][(int)(y - xDir * speed / 1.5)] == 0){
+				y -= xDir * speed / 1.5;
+			}
+		}
+
+		// camera rotation
+		double oldxDir = xDir;
+		xDir = xDir * Math.cos(rotation) - yDir * Math.sin(rotation);
+		yDir = oldxDir * Math.sin(rotation) + yDir * Math.cos(rotation);
+
+		double oldxPlane = xPlane;
+		xPlane = xPlane * Math.cos(rotation) - yPlane * Math.sin(rotation);
+		yPlane = oldxPlane * Math.sin(rotation) + yPlane * Math.cos(rotation);
+
+		player.setX(x);
+		player.setY(y);
+		player.setXDir(xDir);
+		player.setYDir(yDir);
+		player.setXPlane(xPlane);
+		player.setYPlane(yPlane);
+	}
+
 	private void render() {
 		BufferStrategy bs = getBufferStrategy(); // used when rendering so the screen updates are smoother
 
@@ -243,5 +319,90 @@ public class Game extends JFrame {
 		Graphics g = bs.getDrawGraphics();
 		g.drawImage(image, 0, 0, image.getWidth(), image.getHeight(), null);
 		bs.show();
+	}
+
+	//----------INNER CLASSES----------//
+	// Mouse motion listener
+	private class PlayerMouseListener extends MouseAdapter {
+
+		@Override
+		public void mousePressed(MouseEvent e) {
+			int button = e.getButton();
+			if (button == MouseEvent.BUTTON1) {
+				player.setClickedLeft(true);
+			} else if (button == MouseEvent.BUTTON3) {
+				player.setClickedRight(true);
+			}
+		}
+
+		@Override
+		public void mouseReleased(MouseEvent e) {
+			int button = e.getButton();
+			if (button == MouseEvent.BUTTON1) {
+				player.setClickedLeft(false);
+			} else if (button == MouseEvent.BUTTON3) {
+				player.setClickedRight(false);
+			}
+		}
+
+		@Override
+		public void mouseDragged(MouseEvent e) {
+			mouseMoved(e);
+		}
+
+		@Override
+		public void mouseMoved(MouseEvent e) {
+			if (player.getInGame()) {
+				// change rotational value according to how much the mouse has moved
+				// in relation to the center of the screen
+				int curx = e.getX();
+				player.setRotation(-(curx - SCREEN_WIDTH / 2) / 175.0); // 175 is an arbitrary value for tweaking sensitivity
+
+				// use robot to move mouse back to the center of the screen
+				player.getRobot().mouseMove(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2);
+			}
+		}
+	}
+
+	// Key Listener
+	private class PlayerKeyListener implements KeyListener {
+		@Override
+		public void keyTyped (KeyEvent e){ }
+
+		@Override
+		public void keyPressed (KeyEvent e){
+			int key = e.getKeyCode();
+
+			if (key == KeyEvent.VK_W){
+				player.setForward(true);
+			} else if (key == KeyEvent.VK_A){
+				player.setLeft(true);
+			} else if (key == KeyEvent.VK_S){
+				player.setBack(true);
+			} else if (key == KeyEvent.VK_D){
+				player.setRight(true);
+			} else if (key == KeyEvent.VK_R) {
+				spawnPlayer();
+			} else if (key == KeyEvent.VK_ESCAPE){
+				player.setRotation(0);
+				player.setInGame(!player.getInGame());
+				// toggleCursor(true);
+			}
+		}
+
+		@Override
+		public void keyReleased (KeyEvent e){
+			int key = e.getKeyCode();
+
+			if (key == KeyEvent.VK_W){
+				player.setForward(false);
+			} else if (key == KeyEvent.VK_A){
+				player.setLeft(false);
+			} else if (key == KeyEvent.VK_S){
+				player.setBack(false);
+			} else if (key == KeyEvent.VK_D){
+				player.setRight(false);
+			}
+		}
 	}
 }

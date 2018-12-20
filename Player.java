@@ -1,9 +1,5 @@
 import java.awt.AWTException;
 import java.awt.Robot;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionListener;
 
 public class Player {
 
@@ -11,6 +7,7 @@ public class Player {
 	private double xDir, yDir; // player directions vectors
 	private double xPlane, yPlane; // farthest edge of the camera's view
 
+	private boolean clickedLeft, clickedRight; // mouse clicked
 	private boolean left, right, forward, back; // keys pressed
 	private double speed = 0.1;
 	private double rotation; // = 0.05;
@@ -18,36 +15,51 @@ public class Player {
 	Robot robot;
 	boolean inGame = true;
 
-	private int screenWidth;
-	private int screenHeight;
-
-	private PlayerMouseMotionListener pmml;
-	private PlayerKeyListener pkl;
-	private Game game;
-
 	// constructor
-	public Player (double x, double y, double xd, double yd, double xp, double yp, int sw, int sh, Game game){	
+	public Player (double x, double y, double xd, double yd, double xp, double yp, int sw, int sh){	
 		this.x = x;
 		this.y = y;
 		this.xDir = xd;
 		this.yDir = yd;
 		this.xPlane = xp;
 		this.yPlane = yp;
-		this.screenWidth = sw;
-		this.screenHeight = sh;
-		this.game = game;
 
 		try {
 			robot = new Robot();
 		} catch (AWTException e) {
 			e.printStackTrace();
 		}
-
-		pmml = new PlayerMouseMotionListener();
-		pkl = new PlayerKeyListener();
 	}
 
 	// getters
+	public boolean getForward() {
+		return forward;
+	}
+	
+	public boolean getLeft() {
+		return left;
+	}
+	
+	public boolean getBack() {
+		return back;
+	}
+	
+	public boolean getRight() {
+		return right;
+	}
+	
+	public boolean getInGame() {
+		return inGame;
+	}
+	
+	public double getSpeed() {
+		return speed;
+	}
+
+	public double getRotation() {
+		return rotation;
+	}
+	
 	public double getX() {
 		return x;
 	}
@@ -71,134 +83,65 @@ public class Player {
 	public double getYPlane() {
 		return yPlane;
 	}
-
-	public PlayerMouseMotionListener getMouseMotionListener() {
-		return pmml;
+	
+	public Robot getRobot() {
+		return robot;
 	}
-
-	public PlayerKeyListener getKeyListener() {
-		return pkl;
+	
+	// setters
+	public void setClickedLeft(boolean clickedLeft) {
+		this.clickedLeft = clickedLeft;
 	}
-
-	// update camera view
-	public void update(int[][] map) {
-		// player movements
-		int counter = 0;
-		if (forward || back) {
-			counter++;
-		}
-		if (left || right) {
-			counter++;
-		}
-
-		// if pressing 2 buttons simultaneously
-		if (counter == 2) {
-
-		}
-
-		if (forward){
-			if (map[(int)(x + xDir * speed)][(int)y] == 0){
-				x += xDir * speed;
-			}
-			if (map[(int)x][(int)(y + yDir * speed)] == 0){
-				y += yDir * speed;
-			}
-		}
-		if (back){
-			if (map[(int)(x - xDir * speed)][(int)y] == 0){
-				x -= xDir * speed;
-			}
-			if (map[(int)x][(int)(y - yDir * speed)] == 0){
-				y -= yDir * speed;
-			}
-		}
-		// reduced speed on strafing
-		if (left) {
-			if (map[(int)(x - yDir * speed / 1.5)][(int)(y)] == 0){
-				x -= yDir * speed / 1.5;
-			}
-			if (map[(int)x][(int)(y + xDir * speed / 1.5)] == 0){
-				y += xDir * speed / 1.5;
-			}
-		}
-		if (right) {
-			if (map[(int)(x + yDir * speed / 1.5)][(int)y] == 0){
-				x += yDir * speed / 1.5;
-			}
-			if (map[(int)x][(int)(y - xDir * speed / 1.5)] == 0){
-				y -= xDir * speed / 1.5;
-			}
-		}
-
-
-		// camera rotation
-		double oldxDir = xDir;
-		xDir = xDir * Math.cos(rotation) - yDir * Math.sin(rotation);
-		yDir = oldxDir * Math.sin(rotation) + yDir * Math.cos(rotation);
-
-		double oldxPlane = xPlane;
-		xPlane = xPlane * Math.cos(rotation) - yPlane * Math.sin(rotation);
-		yPlane = oldxPlane * Math.sin(rotation) + yPlane * Math.cos(rotation);
+	
+	public void setClickedRight(boolean clickedRight) {
+		this.clickedRight = clickedRight;
 	}
-
-	//----------INNER CLASSES----------//
-	// Mouse motion listener
-	private class PlayerMouseMotionListener implements MouseMotionListener {
-		@Override
-		public void mouseDragged(MouseEvent e) {
-		}
-
-		@Override
-		public void mouseMoved(MouseEvent e) {
-			if (inGame) {
-				// change rotational value according to how much the mouse has moved
-				// in relation to the center of the screen
-				int curx = e.getX();
-				rotation = -(curx - screenWidth / 2) / 175.0; // 175 is an arbitrary value for tweaking sensitivity
-
-				// use robot to move mouse back to the center of the screen
-				robot.mouseMove(screenWidth / 2, screenHeight / 2);
-			}
-		}
+	
+	public void setForward(boolean forward) {
+		this.forward = forward;
 	}
-
-	// Key Listener
-	private class PlayerKeyListener implements KeyListener {
-		@Override
-		public void keyTyped (KeyEvent e){ }
-
-		@Override
-		public void keyPressed (KeyEvent e){
-			int key = e.getKeyCode();
-
-			if (key == KeyEvent.VK_W){
-				forward = true;
-			} else if (key == KeyEvent.VK_A){
-				left = true;
-			} else if (key == KeyEvent.VK_S){
-				back = true;
-			} else if (key == KeyEvent.VK_D){
-				right = true;
-			} else if (key == KeyEvent.VK_ESCAPE){
-				rotation = 0;
-				inGame = !inGame;
-				game.toggleCursor(true);
-			}
-		}
-
-		@Override
-		public void keyReleased (KeyEvent e){
-			int key = e.getKeyCode();
-
-			if (key == KeyEvent.VK_W){
-				forward = false;
-			} else if (key == KeyEvent.VK_A){
-				left = false;
-			} else if (key == KeyEvent.VK_S){
-				back = false;
-			} else if (key == KeyEvent.VK_D){
-				right = false;
-			}
-		}
+	
+	public void setLeft(boolean left) {
+		this.left = left;
+	}
+	
+	public void setBack(boolean back) {
+		this.back = back;
+	}
+	
+	public void setRight(boolean right) {
+		this.right = right;
+	}
+	
+	public void setInGame(boolean inGame) {
+		this.inGame = inGame;
+	}
+	
+	public void setX(double x) {
+		this.x = x;
+	}
+	
+	public void setY(double y) {
+		this.y = y;
+	}
+	
+	public void setXDir(double xDir) {
+		this.xDir = xDir;
+	}
+	
+	public void setYDir(double yDir) {
+		this.yDir = yDir;
+	}
+	
+	public void setXPlane(double xPlane) {
+		this.xPlane = xPlane;
+	}
+	
+	public void setYPlane(double yPlane) {
+		this.yPlane = yPlane;
+	}
+	
+	public void setRotation(double rotation) {
+		this.rotation = rotation;
 	}
 }
