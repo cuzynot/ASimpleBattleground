@@ -2,7 +2,7 @@ import java.awt.Color;
 
 public class Display {
 	private int[][] map;
-	private int mapWidth, mapHeight, width, height;
+	private int width, height;
 
 	private final int darkGray = Color.DARK_GRAY.getRGB();
 	private final int gray = Color.GRAY.getRGB();

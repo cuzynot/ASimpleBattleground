@@ -3,11 +3,11 @@ import java.awt.Cursor;
 import java.awt.Graphics;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
+import java.awt.MouseInfo;
 import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.image.BufferStrategy;
@@ -35,6 +35,7 @@ public class Game extends JFrame {
 	// screen dimensions
 	private final int SCREEN_WIDTH;
 	private final int SCREEN_HEIGHT;
+	private final double WIDTH_TO_HEIGHT;
 
 	// images
 	private BufferedImage image;
@@ -66,18 +67,22 @@ public class Game extends JFrame {
 	// random color;
 	private Color color;
 
+	// current cursor
+	private boolean cursor;
+
 	// constructor
 	public Game() {
 		color = new Color((int)(Math.random() * 255), (int)(Math.random() * 255), (int)(Math.random() * 255));
 		randomizeMap();
 
 		BufferedImage cursorImg = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
-		defaultCursor = Toolkit.getDefaultToolkit().createCustomCursor(cursorImg, new Point(10, 10), "default cursor");
+		defaultCursor = Cursor.getDefaultCursor();
 		blankCursor = Toolkit.getDefaultToolkit().createCustomCursor(cursorImg, new Point(0, 0), "blank cursor");
 		// toggleCursor(false);
 
 		SCREEN_WIDTH = (int)(Toolkit.getDefaultToolkit().getScreenSize().getWidth());
 		SCREEN_HEIGHT = (int)(Toolkit.getDefaultToolkit().getScreenSize().getHeight());
+		WIDTH_TO_HEIGHT = SCREEN_WIDTH / SCREEN_HEIGHT;
 
 		image = new BufferedImage(SCREEN_WIDTH, SCREEN_HEIGHT, BufferedImage.TYPE_INT_RGB);
 		pixels = ((DataBufferInt)image.getRaster().getDataBuffer()).getData(); // links pixels to image 
@@ -88,15 +93,19 @@ public class Game extends JFrame {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setVisible(true);
 
+		// make this frame full screen
 		GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices()[0];
 		gd.setFullScreenWindow(this);
+
+		// make cursor blank
+		cursor = false;
+		toggleCursor(cursor);
 
 		// init Screen
 		display = new Display(map, SCREEN_WIDTH, SCREEN_HEIGHT, color); // screen = new Screen(map, mapWidth, mapHeight, textures, 640, 480);
 
 		// spawn the player
 		spawnPlayer();
-
 	}
 
 	// public methods
@@ -112,7 +121,6 @@ public class Game extends JFrame {
 		PlayerKeyListener pkl = new PlayerKeyListener();
 		PlayerMouseListener pml = new PlayerMouseListener();
 		addKeyListener(pkl);
-		addMouseMotionListener(pml);
 		addMouseListener(pml);
 
 		// enter game loop
@@ -221,15 +229,16 @@ public class Game extends JFrame {
 		}
 	}
 
-	// required for implementation
+	// game loop
 	private void run() {
-
 		while(true) {
 			try {
 				Thread.sleep(5);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
+			mouseMoved();
+
 			update();
 			display.update(player, pixels);
 
@@ -317,13 +326,36 @@ public class Game extends JFrame {
 		}
 
 		Graphics g = bs.getDrawGraphics();
-		g.drawImage(image, 0, 0, image.getWidth(), image.getHeight(), null);
+		if (player.getClickedRight()) { // if the player is scoped in
+			int zoom = 200; // temp
+			g.drawImage(image.getSubimage(zoom, (int)(zoom / WIDTH_TO_HEIGHT), image.getWidth() - zoom * 2, (int)(image.getHeight() - zoom / WIDTH_TO_HEIGHT * 2)), 0, 0, image.getWidth(), image.getHeight(), null);
+		} else {
+			g.drawImage(image, 0, 0, image.getWidth(), image.getHeight(), null);
+		}
+
 		bs.show();
+	}
+
+	private void mouseMoved() {
+		if (player.getInGame()) {
+			// get current x position of the cursor
+			int curx = (int)(MouseInfo.getPointerInfo().getLocation().getX());
+			// change rotational value according to how much the mouse has moved
+			// in relation to the center of the screen
+			player.setRotation(-(curx - SCREEN_WIDTH / 2) / 1000.0); // 1000 is an arbitrary value for tweaking sensitivity
+
+			// use robot to move mouse back to the center of the screen
+			player.getRobot().mouseMove(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2);
+		}
 	}
 
 	//----------INNER CLASSES----------//
 	// Mouse motion listener
-	private class PlayerMouseListener extends MouseAdapter {
+	private class PlayerMouseListener implements MouseListener {
+
+		@Override
+		public void mouseClicked(MouseEvent e) {
+		}
 
 		@Override
 		public void mousePressed(MouseEvent e) {
@@ -346,21 +378,11 @@ public class Game extends JFrame {
 		}
 
 		@Override
-		public void mouseDragged(MouseEvent e) {
-			mouseMoved(e);
+		public void mouseEntered(MouseEvent e) {
 		}
 
 		@Override
-		public void mouseMoved(MouseEvent e) {
-			if (player.getInGame()) {
-				// change rotational value according to how much the mouse has moved
-				// in relation to the center of the screen
-				int curx = e.getX();
-				player.setRotation(-(curx - SCREEN_WIDTH / 2) / 175.0); // 175 is an arbitrary value for tweaking sensitivity
-
-				// use robot to move mouse back to the center of the screen
-				player.getRobot().mouseMove(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2);
-			}
+		public void mouseExited(MouseEvent e) {
 		}
 	}
 
@@ -386,7 +408,9 @@ public class Game extends JFrame {
 			} else if (key == KeyEvent.VK_ESCAPE){
 				player.setRotation(0);
 				player.setInGame(!player.getInGame());
-				// toggleCursor(true);
+
+				cursor = !cursor;
+				toggleCursor(cursor);
 			}
 		}
 

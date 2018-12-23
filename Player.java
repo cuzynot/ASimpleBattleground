@@ -48,6 +48,14 @@ public class Player {
 		return right;
 	}
 	
+	public boolean getClickedLeft() {
+		return clickedLeft;
+	}
+	
+	public boolean getClickedRight() {
+		return clickedRight;
+	}
+	
 	public boolean getInGame() {
 		return inGame;
 	}
