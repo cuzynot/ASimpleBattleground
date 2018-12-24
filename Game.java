@@ -1,8 +1,6 @@
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Graphics;
-import java.awt.GraphicsDevice;
-import java.awt.GraphicsEnvironment;
 import java.awt.MouseInfo;
 import java.awt.Point;
 import java.awt.Toolkit;
@@ -13,6 +11,7 @@ import java.awt.event.MouseListener;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 import javax.swing.JFrame;
@@ -42,23 +41,6 @@ public class Game extends JFrame {
 	private int[] pixels;
 	private final int mapSize = 30;
 	private static int[][] map;
-	//	= {
-	//			{1,1,1,1,1,1,1,1,2,2,2,2,2,2,2},
-	//			{1,0,0,0,0,0,0,0,2,0,0,0,0,0,2},
-	//			{1,0,3,3,3,3,3,0,0,0,0,0,0,0,2},
-	//			{1,0,3,0,0,0,3,0,2,0,0,0,0,0,2},
-	//			{1,0,3,0,0,0,3,0,2,2,2,0,2,2,2},
-	//			{1,0,3,0,0,0,3,0,2,0,0,0,0,0,2},
-	//			{1,0,3,3,0,3,3,0,2,0,0,0,0,0,2},
-	//			{1,0,0,0,0,0,0,0,2,0,0,0,0,0,2},
-	//			{1,1,1,1,1,1,1,1,4,4,4,0,4,4,4},
-	//			{1,0,0,0,0,0,1,4,0,0,0,0,0,0,4},
-	//			{1,0,0,0,0,0,1,4,0,0,0,0,0,0,4},
-	//			{1,0,0,2,0,0,1,4,0,3,3,3,3,0,4},
-	//			{1,0,0,0,0,0,1,4,0,3,3,3,3,0,4},
-	//			{1,0,0,0,0,0,0,0,0,0,0,0,0,0,4},
-	//			{1,1,1,1,1,1,1,4,4,4,4,4,4,4,4}
-	//	};
 
 	// cursors
 	private Cursor defaultCursor;
@@ -68,10 +50,15 @@ public class Game extends JFrame {
 	private Color color;
 
 	// current cursor
-	private boolean cursor;
+	private boolean cursorShown;
+
+	// client object
+	private Client client;
 
 	// constructor
 	public Game() {
+		client = new Client();
+
 		color = new Color((int)(Math.random() * 255), (int)(Math.random() * 255), (int)(Math.random() * 255));
 		randomizeMap();
 
@@ -92,14 +79,15 @@ public class Game extends JFrame {
 		setTitle("A Simple Battleground");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setVisible(true);
+		setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
 
 		// make this frame full screen
-		GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices()[0];
-		gd.setFullScreenWindow(this);
+		//		GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices()[0];
+		//		gd.setFullScreenWindow(this);
 
 		// make cursor blank
-		cursor = false;
-		toggleCursor(cursor);
+		cursorShown = false;
+		toggleCursor(cursorShown);
 
 		// init Screen
 		display = new Display(map, SCREEN_WIDTH, SCREEN_HEIGHT, color); // screen = new Screen(map, mapWidth, mapHeight, textures, 640, 480);
@@ -117,7 +105,7 @@ public class Game extends JFrame {
 			y = (int)(Math.random() * map[0].length);
 		}
 
-		player = new Player(x, y, 1, 0, 0, -0.66, SCREEN_WIDTH, SCREEN_HEIGHT);
+		player = new Player(client.getName(), x, y, 1, 0, 0, -0.66, SCREEN_WIDTH, SCREEN_HEIGHT);
 		PlayerKeyListener pkl = new PlayerKeyListener();
 		PlayerMouseListener pml = new PlayerMouseListener();
 		addKeyListener(pkl);
@@ -185,9 +173,9 @@ public class Game extends JFrame {
 		}
 
 		// print in console
-		for (int i = 0; i < map.length; i++) {
-			System.out.println(Arrays.toString(map[i]));
-		}
+		//		for (int i = 0; i < map.length; i++) {
+		//			System.out.println(Arrays.toString(map[i]));
+		//		}
 	}
 
 	private void bfs(int i, int j) {
@@ -241,6 +229,7 @@ public class Game extends JFrame {
 
 			update();
 			display.update(player, pixels);
+			client.getOutput().println("xy " + player.getName() + " " + player.getX() + " " + player.getY());
 
 			render(); //displays to the screen unrestricted time
 		}
@@ -409,8 +398,15 @@ public class Game extends JFrame {
 				player.setRotation(0);
 				player.setInGame(!player.getInGame());
 
-				cursor = !cursor;
-				toggleCursor(cursor);
+				cursorShown = !cursorShown;
+				toggleCursor(cursorShown);
+			} else if (key == KeyEvent.VK_Z) {
+				ArrayList<Player> players = client.getPlayers();
+
+				System.out.println("this " + " xy " + player.getX() + " " + player.getY());
+				for (Player p : players) {
+					System.out.println(p.getName() + " xy " + p.getX() + " " + p.getY());
+				}
 			}
 		}
 

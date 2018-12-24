@@ -11,12 +11,15 @@ public class Player {
 	private boolean left, right, forward, back; // keys pressed
 	private double speed = 0.1;
 	private double rotation; // = 0.05;
+	
+	private String name;
 
 	Robot robot;
 	boolean inGame = true;
 
 	// constructor
-	public Player (double x, double y, double xd, double yd, double xp, double yp, int sw, int sh){	
+	public Player(String name, double x, double y, double xd, double yd, double xp, double yp, int sw, int sh){	
+		this.name = name;
 		this.x = x;
 		this.y = y;
 		this.xDir = xd;
@@ -29,6 +32,10 @@ public class Player {
 		} catch (AWTException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	public Player(String name) {
+		this.name = name;
 	}
 
 	// getters
@@ -94,6 +101,10 @@ public class Player {
 	
 	public Robot getRobot() {
 		return robot;
+	}
+	
+	public String getName() {
+		return name;
 	}
 	
 	// setters
