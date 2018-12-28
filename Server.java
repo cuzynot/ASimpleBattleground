@@ -132,20 +132,6 @@ public class Server {
 		}
 	}
 
-	/** change
-	 * Takes in username of client and their new status
-	 * and updates it for every client
-	 */
-	private void change(String user, String status) {
-		for (int i = 0; i < clients.size(); i++) {
-			ClientObject cur = clients.get(i);
-			if (!cur.getUsername().equals(user)) {
-				cur.getOutput().println("change " + user + " " + status);
-				cur.getOutput().flush();
-			}
-		}
-	}
-
 	//***** Inner class - ActionListener to get port number
 	private class SendActionListener implements ActionListener {
 
@@ -267,14 +253,6 @@ public class Server {
 			} catch(IOException e) {
 				e.printStackTrace();
 			}            
-		}
-
-		/** setStatus
-		 * This method updates the status of a user
-		 * @param String s, the new status of client
-		 */
-		public void setStatus(String s) {
-			this.status = s;
 		}
 
 		/** getStatus

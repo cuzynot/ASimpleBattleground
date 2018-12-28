@@ -15,24 +15,25 @@ import java.util.ArrayList;
 import javax.swing.JOptionPane;
 
 public class Client {
+		
+	// init vars and gui
+	private Socket socket;
+	private BufferedReader input;
+	private PrintWriter output;
 
-	//Init vars and gui
-	static Client c;
-
-	Socket socket;
-	BufferedReader input;
-	PrintWriter output;
-
-	ArrayList<Player> players;
-	boolean running = true;
-	String name;
+	private ArrayList<Player> players;
+	private boolean running;
+	private String name;
+	private String build;
 
 	/**
 	 * ChatClient 
 	 * constructor
 	 */
 	public Client() {
-		//Get address and port and connect, then get username
+		running = true;
+		
+		// get address and port and connect, then get username
 		players = new ArrayList<Player>();
 		
 		String address = JOptionPane.showInputDialog("Enter IP Address:");
@@ -43,8 +44,8 @@ public class Client {
 
 		output.println(name);
 		output.flush();
-
-		//Check duplicate username
+		
+		// check duplicate username
 		try {
 			if (input.ready()) {
 				String msg = input.readLine();
@@ -67,8 +68,9 @@ public class Client {
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
-
-		go(); //Start communication with server
+		
+		// start communication with server
+		go();
 	}
 	/**
 	 * Main
@@ -86,9 +88,17 @@ public class Client {
 	public String getName() {
 		return name;
 	}
+	
+	public String getBuild() {
+		return build;
+	}
 
 	public ArrayList<Player> getPlayers(){
 		return players;
+	}
+	
+	public void update(Player player) {
+		output.println("xy " + player.getName() + " " + player.getX() + " " + player.getY());
 	}
 
 

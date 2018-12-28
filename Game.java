@@ -12,7 +12,6 @@ import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 import javax.swing.JFrame;
 
@@ -22,7 +21,7 @@ public class Game extends JFrame {
 
 	// run
 	public static void main (String[] args){
-		new Game();
+		new Game(new Client());
 	}
 
 	// Camera
@@ -56,8 +55,8 @@ public class Game extends JFrame {
 	private Client client;
 
 	// constructor
-	public Game() {
-		client = new Client();
+	public Game(Client client) {
+		this.client = client;
 
 		color = new Color((int)(Math.random() * 255), (int)(Math.random() * 255), (int)(Math.random() * 255));
 		randomizeMap();
@@ -105,7 +104,7 @@ public class Game extends JFrame {
 			y = (int)(Math.random() * map[0].length);
 		}
 
-		player = new Player(client.getName(), x, y, 1, 0, 0, -0.66, SCREEN_WIDTH, SCREEN_HEIGHT);
+		player = new Player(client.getName(), x, y, 1, 0, 0, -1, "sniper"); // temp
 		PlayerKeyListener pkl = new PlayerKeyListener();
 		PlayerMouseListener pml = new PlayerMouseListener();
 		addKeyListener(pkl);
@@ -171,11 +170,6 @@ public class Game extends JFrame {
 				}
 			}
 		}
-
-		// print in console
-		//		for (int i = 0; i < map.length; i++) {
-		//			System.out.println(Arrays.toString(map[i]));
-		//		}
 	}
 
 	private void bfs(int i, int j) {
@@ -220,16 +214,16 @@ public class Game extends JFrame {
 	// game loop
 	private void run() {
 		while(true) {
-			try {
-				Thread.sleep(5);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
+			//			try {
+			//				Thread.sleep(5);
+			//			} catch (InterruptedException e) {
+			//				e.printStackTrace();
+			//			}
 			mouseMoved();
 
 			update();
-			display.update(player, pixels);
-			client.getOutput().println("xy " + player.getName() + " " + player.getX() + " " + player.getY());
+			display.update(player, pixels, client.getPlayers());
+			client.update(player);
 
 			render(); //displays to the screen unrestricted time
 		}
@@ -248,7 +242,7 @@ public class Game extends JFrame {
 		double y = player.getY();
 		double xDir = player.getXDir();
 		double yDir = player.getYDir();
-		double speed = player.getSpeed();
+		double speed = player.getBuild().getSpeed();
 		double rotation = player.getRotation();
 		double xPlane = player.getXPlane();
 		double yPlane = player.getYPlane();
@@ -272,20 +266,20 @@ public class Game extends JFrame {
 		}
 
 		// reduced speed on strafing
-		if (left) {
-			if (map[(int)(x - yDir * speed / 1.5)][(int)(y)] == 0){
-				x -= yDir * speed / 1.5;
+		if (left){
+			if (map[(int)(x - xPlane * speed)][(int)y] == 0){
+				x -= xPlane * speed;
 			}
-			if (map[(int)x][(int)(y + xDir * speed / 1.5)] == 0){
-				y += xDir * speed / 1.5;
+			if (map[(int)x][(int)(y - yPlane * speed)] == 0){
+				y -= yPlane * speed;
 			}
 		}
-		if (right) {
-			if (map[(int)(x + yDir * speed / 1.5)][(int)y] == 0){
-				x += yDir * speed / 1.5;
+		if (right){
+			if (map[(int)(x + xPlane * speed)][(int)y] == 0){
+				x += xPlane * speed;
 			}
-			if (map[(int)x][(int)(y - xDir * speed / 1.5)] == 0){
-				y -= xDir * speed / 1.5;
+			if (map[(int)x][(int)(y + yPlane * speed)] == 0){
+				y += yPlane * speed;
 			}
 		}
 
@@ -316,10 +310,12 @@ public class Game extends JFrame {
 
 		Graphics g = bs.getDrawGraphics();
 		if (player.getClickedRight()) { // if the player is scoped in
-			int zoom = 200; // temp
-			g.drawImage(image.getSubimage(zoom, (int)(zoom / WIDTH_TO_HEIGHT), image.getWidth() - zoom * 2, (int)(image.getHeight() - zoom / WIDTH_TO_HEIGHT * 2)), 0, 0, image.getWidth(), image.getHeight(), null);
+			int zoomW = (int)(image.getWidth() * player.getBuild().getZoom());
+			int zoomH = (int)(image.getHeight() * player.getBuild().getZoom());
+			BufferedImage sub = image.getSubimage(zoomW, zoomH, image.getWidth() - zoomW * 2, image.getHeight() - zoomH * 2);
+			g.drawImage(sub, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, null);
 		} else {
-			g.drawImage(image, 0, 0, image.getWidth(), image.getHeight(), null);
+			g.drawImage(image, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, null);
 		}
 
 		bs.show();

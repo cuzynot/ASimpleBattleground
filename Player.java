@@ -1,24 +1,29 @@
 import java.awt.AWTException;
 import java.awt.Robot;
 
-public class Player {
+import builds.Assassin;
+import builds.Build;
+import builds.Guard;
+import builds.Sniper;
+import builds.Soldier;
 
-	private double x, y; // player positions
-	private double xDir, yDir; // player directions vectors
-	private double xPlane, yPlane; // farthest edge of the camera's view
+public class Player {
 
 	private boolean clickedLeft, clickedRight; // mouse clicked
 	private boolean left, right, forward, back; // keys pressed
-	private double speed = 0.1;
-	private double rotation; // = 0.05;
+	
+	private double x, y; // player positions
+	private double xDir, yDir; // player directions vectors
+	private double xPlane, yPlane; // farthest edge of the camera's view
+	private double rotation;
 	
 	private String name;
-
-	Robot robot;
-	boolean inGame = true;
+	private Robot robot;
+	private boolean inGame;
+	private Build build;
 
 	// constructor
-	public Player(String name, double x, double y, double xd, double yd, double xp, double yp, int sw, int sh){	
+	public Player(String name, double x, double y, double xd, double yd, double xp, double yp, String build){
 		this.name = name;
 		this.x = x;
 		this.y = y;
@@ -26,6 +31,17 @@ public class Player {
 		this.yDir = yd;
 		this.xPlane = xp;
 		this.yPlane = yp;
+		this.inGame = true;
+		
+		if (build.equals("assassin")) {
+			this.build = new Assassin();
+		} else if (build.equals("guard")) {
+			this.build = new Guard();
+		} else if (build.equals("sniper")) {
+			this.build = new Sniper();
+		} else {
+			this.build = new Soldier();
+		}
 
 		try {
 			robot = new Robot();
@@ -67,10 +83,6 @@ public class Player {
 		return inGame;
 	}
 	
-	public double getSpeed() {
-		return speed;
-	}
-
 	public double getRotation() {
 		return rotation;
 	}
@@ -105,6 +117,10 @@ public class Player {
 	
 	public String getName() {
 		return name;
+	}
+	
+	public Build getBuild() {
+		return build;
 	}
 	
 	// setters
