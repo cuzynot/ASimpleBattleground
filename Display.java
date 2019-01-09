@@ -7,6 +7,9 @@ public class Display {
 
 	private final int DARK_GRAY;
 	private final int GRAY;
+	private final int BLACK;
+	private final double PLAYER_WIDTH;
+
 	private Color color;
 	private int colorRGB;
 	private int darkerColorRGB;
@@ -15,7 +18,9 @@ public class Display {
 	public Display(int[][] m, int w, int h, Color c) {
 		DARK_GRAY = Color.DARK_GRAY.getRGB();
 		GRAY = Color.GRAY.getRGB();
-		
+		BLACK = Color.BLACK.getRGB();
+		PLAYER_WIDTH = 0.5;
+
 		map = m;
 		width = w;
 		height = h;
@@ -45,20 +50,18 @@ public class Display {
 			double rayDirX = player.getXDir() + player.getXPlane() * cameraX;
 			double rayDirY = player.getYDir() + player.getYPlane() * cameraX;
 
-			// Map position
-			int mapX = (int) player.getX();
-			int mapY = (int) player.getY();
-
-			// length of ray from current position to next x or y-side
-			double sideDistX;
-			double sideDistY;
-
 			// length of ray from one side to next in map
 			double deltaDistX = Math.sqrt(1 + (rayDirY * rayDirY) / (rayDirX * rayDirX));
 			double deltaDistY = Math.sqrt(1 + (rayDirX * rayDirX) / (rayDirY * rayDirY));
 
+			// Map position
+			int mapX = (int)player.getX();
+			int mapY = (int)player.getY();
 			// direction to go in x and y
 			int stepX, stepY;
+			// length of ray from current position to next x or y-side
+			double sideDistX;
+			double sideDistY;
 
 			// figure out the step direction and initial distance to a side
 			if (rayDirX < 0){
@@ -77,13 +80,14 @@ public class Display {
 				sideDistY = (mapY + 1.0 - player.getY()) * deltaDistY;
 			}
 
-			boolean hit = false; // was a wall hit
+			boolean hitWall = false; // was a wall hit
 			int side = 0; // was the wall vertical or horizontal
-			
+			double closestDist = Double.MAX_VALUE; // closest distance to a player
+
 			// Loop to find where the ray hits a wall
-			while(!hit) {
+			while (!hitWall) {
 				// Jump to next square
-				if (sideDistX < sideDistY){
+				if (sideDistX < sideDistY) {
 					sideDistX += deltaDistX;
 					mapX += stepX;
 					side = 0;
@@ -93,22 +97,24 @@ public class Display {
 					side = 1;
 				}
 
-				// Check if ray has hit an object
+				if (map[mapX][mapY] > 0) {
+					hitWall = true;
+				}
+
 				for (int i = 0; i < players.size(); i++) {
 					Player p = players.get(i);
-					if (p.getX() > mapX - 0.3 && p.getX() < mapX + 0.3 && p.getY() > mapY - 0.3 && p.getY() < mapY + 0.3) {
-						// hit = true;
+					if (p.getX() > mapX - PLAYER_WIDTH && p.getX() < mapX + PLAYER_WIDTH && p.getY() > mapY - PLAYER_WIDTH && p.getY() < mapY + PLAYER_WIDTH) {
+						if (dist(player, p) < closestDist) {
+							closestDist = dist(player, p);
+						}
 					}
-				}
-				if(map[mapX][mapY] > 0) {
-					hit = true;
 				}
 			}
 
 			double perpWallDist; // distance from the player to the first wall the ray collides with
 
 			// calculate distance to the point of impact
-			if(side == 0) {
+			if (side == 0) {
 				perpWallDist = Math.abs((mapX - player.getX() + (1 - stepX) / 2) / rayDirX);
 			} else {
 				perpWallDist = Math.abs((mapY - player.getY() + (1 - stepY) / 2) / rayDirY);    
@@ -116,7 +122,7 @@ public class Display {
 
 			// now calculate the height of the wall based on the distance from the camera
 			int lineHeight;
-			if(perpWallDist > 0) {
+			if (perpWallDist > 0) {
 				lineHeight = Math.abs((int)(height / perpWallDist));
 			} else {
 				lineHeight = height;
@@ -133,37 +139,31 @@ public class Display {
 				drawEnd = height - 1;
 			}
 
-			// add a texture
-			// int texNum = map[mapX][mapY] - 1;
-			double wallX; // Exact position of where wall was hit
-			if(side == 1) { // If its a y-axis wall
-				wallX = (player.getX() + ((mapY - player.getY() + (1 - stepY) / 2) / rayDirY) * rayDirX);
-			} else { // X-axis wall
-				wallX = (player.getY() + ((mapX - player.getX() + (1 - stepX) / 2) / rayDirX) * rayDirY);
-			}
-			wallX -= Math.floor(wallX);
-
-			// x coordinate on the texture
-			int texX = (int)(wallX * (64));
-			if(side == 0 && rayDirX > 0) {
-				texX = 64 - texX - 1;
-			}
-			if(side == 1 && rayDirY < 0) {
-				texX = 64 - texX - 1;
-			}
-
 			// calculate y coordinate on texture
-			for(int y = drawStart; y < drawEnd; y++) {
-				// int texY = (((y*2 - height + lineHeight) << 6) / lineHeight) / 2;
+			for (int i = drawStart; i < drawEnd; i++) {
+				// int texi = (((i*2 - height + lineHeight) << 6) / lineHeight) / 2;
 
-				if(side == 0) {
-					pixels[x + y * width] = colorRGB;
+				if (side == 0) {
+					pixels[x + i * width] = colorRGB;
 				} else {
-					pixels[x + y * width] = darkerColorRGB; // make y sides darker
+					pixels[x + i * width] = darkerColorRGB; // make i sides darker
+				}
+			}
+			
+			// if a player is in sight
+			if (closestDist != Double.MAX_VALUE) {
+				double sub = height / closestDist / 2;
+				if (sub > height / 2) {
+					sub = height / 2;
+				}
+				for (int i = (int)(height / 2 - sub); i < (int)(height / 2 + sub); i++) {
+					pixels[x + i * width] = BLACK;
 				}
 			}
 		}
+	}
 
-		// return pixels;
+	private double dist(Player a, Player b) {
+		return Math.sqrt(Math.pow(a.getX() - b.getX(), 2) + Math.pow(a.getY() - b.getY(), 2));
 	}
 }

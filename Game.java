@@ -15,8 +15,6 @@ import java.util.ArrayList;
 
 import javax.swing.JFrame;
 
-import data_structures.SimpleQueue;
-
 public class Game extends JFrame {
 
 	// run
@@ -33,12 +31,10 @@ public class Game extends JFrame {
 	// screen dimensions
 	private final int SCREEN_WIDTH;
 	private final int SCREEN_HEIGHT;
-	private final double WIDTH_TO_HEIGHT;
 
 	// images
 	private BufferedImage image;
 	private int[] pixels;
-	private final int mapSize = 30;
 	private static int[][] map;
 
 	// cursors
@@ -53,13 +49,15 @@ public class Game extends JFrame {
 
 	// client object
 	private Client client;
+	
+	// list of players
+	private ArrayList<Player> players;
 
 	// constructor
 	public Game(Client client) {
 		this.client = client;
 
 		color = new Color((int)(Math.random() * 255), (int)(Math.random() * 255), (int)(Math.random() * 255));
-		randomizeMap();
 
 		BufferedImage cursorImg = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
 		defaultCursor = Cursor.getDefaultCursor();
@@ -68,7 +66,6 @@ public class Game extends JFrame {
 
 		SCREEN_WIDTH = (int)(Toolkit.getDefaultToolkit().getScreenSize().getWidth());
 		SCREEN_HEIGHT = (int)(Toolkit.getDefaultToolkit().getScreenSize().getHeight());
-		WIDTH_TO_HEIGHT = SCREEN_WIDTH / SCREEN_HEIGHT;
 
 		image = new BufferedImage(SCREEN_WIDTH, SCREEN_HEIGHT, BufferedImage.TYPE_INT_RGB);
 		pixels = ((DataBufferInt)image.getRaster().getDataBuffer()).getData(); // links pixels to image 
@@ -88,6 +85,9 @@ public class Game extends JFrame {
 		cursorShown = false;
 		toggleCursor(cursorShown);
 
+		players = client.getPlayers();
+		map = client.getMap();
+		
 		// init Screen
 		display = new Display(map, SCREEN_WIDTH, SCREEN_HEIGHT, color); // screen = new Screen(map, mapWidth, mapHeight, textures, 640, 480);
 
@@ -127,102 +127,18 @@ public class Game extends JFrame {
 		getContentPane().setCursor(cursor);
 	}
 
-	private void randomizeMap() {
-		// instantiate map
-		map = new int[mapSize][mapSize];
-
-		// randomize the walls
-		for (int i = 1; i < map.length - 1; i++) {
-			for (int j = 1; j < map[0].length - 1; j++) {
-				map[i][j] = (int)(Math.random() * 2) + 1; // either 1 (a wall) or 0 (open)
-			}
-		}
-
-		// make sure the exterior are walls
-		for (int i = 0; i < map.length; i++) {
-			map[0][i] = 1;
-			map[map[0].length - 1][i] = 1;
-		}
-		for (int i = 0; i < map[0].length; i++) {
-			map[i][0] = 1;
-			map[i][map.length - 1] = 1;
-		}
-
-		int prevx = 1;
-		int prevy = 1;
-
-		for (int i = 1; i < map.length - 1; i++) {
-			for (int j = 1; j < map[0].length - 1; j++) {
-				if (map[i][j] == 0) {
-					prevx = i;
-					prevy = j;
-				} else if (map[i][j] == 2) {
-					for (int k = prevx; k < i; k++) {
-						map[k][j] = 0;
-					}
-					for (int l = Math.min(prevy, j); l < Math.max(prevy, j); l++) {
-						map[prevx][l] = 0;
-					}
-
-					bfs(i, j);
-					prevx = i;
-					prevy = j;
-				}
-			}
-		}
-	}
-
-	private void bfs(int i, int j) {
-		SimpleQueue<Integer> queue = new SimpleQueue<Integer>();
-		queue.enqueue(i); // add x
-		queue.enqueue(j); // and y coordinates of the staring point
-
-		// bfs to make sure every cell in the map is connected
-		while (!queue.isEmpty()) {
-			int x = queue.dequeue();
-			int y = queue.dequeue();
-
-			// if current coordinate has not been visited yet
-			if (map[x][y] == 2) {
-				// make current cell blank and randomize adj cells
-				map[x][y] = 0;
-
-				// if any adj cell is open, they get added to the queue
-				if (x - 1 > 0) {
-					queue.enqueue(x - 1);
-					queue.enqueue(y);
-				}
-
-				if (y - 1 > 0) {
-					queue.enqueue(x);
-					queue.enqueue(y - 1);
-				}
-
-				if (x + 1 < map.length) {
-					queue.enqueue(x + 1);
-					queue.enqueue(y);
-				}
-
-				if (y + 1 < map[0].length) {
-					queue.enqueue(x);
-					queue.enqueue(y + 1);
-				}
-			}
-		}
-	}
-
 	// game loop
 	private void run() {
 		while(true) {
-			//			try {
-			//				Thread.sleep(5);
-			//			} catch (InterruptedException e) {
-			//				e.printStackTrace();
-			//			}
+			try {
+				Thread.sleep(5);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 			mouseMoved();
 
 			update();
-			display.update(player, pixels, client.getPlayers());
+			display.update(player, pixels, players);
 			client.update(player);
 
 			render(); //displays to the screen unrestricted time
@@ -317,6 +233,13 @@ public class Game extends JFrame {
 		} else {
 			g.drawImage(image, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, null);
 		}
+		
+		// draw players
+		// MAKE MORE EFFICIENT
+//		double m = player.getXDir() / player.getYDir();
+//		double b = player.getY() - m * player.getX();
+//
+		
 
 		bs.show();
 	}
@@ -325,12 +248,13 @@ public class Game extends JFrame {
 		if (player.getInGame()) {
 			// get current x position of the cursor
 			int curx = (int)(MouseInfo.getPointerInfo().getLocation().getX());
+			
 			// change rotational value according to how much the mouse has moved
 			// in relation to the center of the screen
-			player.setRotation(-(curx - SCREEN_WIDTH / 2) / 1000.0); // 1000 is an arbitrary value for tweaking sensitivity
+			player.setRotation(-(curx - SCREEN_WIDTH / 2) / 3500.0); // 1000 is an arbitrary value for tweaking sensitivity
 
 			// use robot to move mouse back to the center of the screen
-			player.getRobot().mouseMove(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2);
+			player.getRobot().mouseMove((curx + SCREEN_WIDTH / 2) / 2, SCREEN_HEIGHT / 2);
 		}
 	}
 
@@ -397,8 +321,6 @@ public class Game extends JFrame {
 				cursorShown = !cursorShown;
 				toggleCursor(cursorShown);
 			} else if (key == KeyEvent.VK_Z) {
-				ArrayList<Player> players = client.getPlayers();
-
 				System.out.println("this " + " xy " + player.getX() + " " + player.getY());
 				for (Player p : players) {
 					System.out.println(p.getName() + " xy " + p.getX() + " " + p.getY());

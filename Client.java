@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import javax.swing.JOptionPane;
 
 public class Client {
-		
+
 	// init vars and gui
 	private Socket socket;
 	private BufferedReader input;
@@ -23,8 +23,14 @@ public class Client {
 
 	private ArrayList<Player> players;
 	private boolean running;
-	private String name;
 	private String build;
+
+	private int mapSize;
+	private static int[][] map;
+
+	private String address;
+	private int port;
+	private String name;
 
 	/**
 	 * ChatClient 
@@ -32,19 +38,19 @@ public class Client {
 	 */
 	public Client() {
 		running = true;
-		
+
 		// get address and port and connect, then get username
 		players = new ArrayList<Player>();
-		
-		String address = JOptionPane.showInputDialog("Enter IP Address:");
-		int port = Integer.parseInt(JOptionPane.showInputDialog("Enter port (enter a number or else the program will crash):"));
+
+		address = "localhost"; // JOptionPane.showInputDialog("Enter IP Address:");
+		port = 5001; //Integer.parseInt(JOptionPane.showInputDialog("Enter port (enter a number or else the program will crash):"));
 		name = JOptionPane.showInputDialog("Enter username:").replace(" ", "");
 
 		connect(address, port);
 
 		output.println(name);
 		output.flush();
-		
+
 		// check duplicate username
 		try {
 			if (input.ready()) {
@@ -68,7 +74,7 @@ public class Client {
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
-		
+
 		// start communication with server
 		go();
 	}
@@ -88,7 +94,7 @@ public class Client {
 	public String getName() {
 		return name;
 	}
-	
+
 	public String getBuild() {
 		return build;
 	}
@@ -96,7 +102,11 @@ public class Client {
 	public ArrayList<Player> getPlayers(){
 		return players;
 	}
-	
+
+	public int[][] getMap(){
+		return map;
+	}
+
 	public void update(Player player) {
 		output.println("xy " + player.getName() + " " + player.getX() + " " + player.getY());
 	}
@@ -112,23 +122,45 @@ public class Client {
 		// after connecting loop and keep appending[.append()] to the JTextArea
 
 		Runnable runnable = new Runnable() {
+			String msg;
+			String[] arr;
+
 			public void run(){
 				try {
 					input.readLine();
+					
 					while (running) {
 						if (input.ready()) { // check for an incoming messge
-							String msg = input.readLine(); // read the message
-							String[] arr = msg.split(" ");
+							msg = input.readLine(); // read the message
+							arr = msg.split(" ");
 
 							String command = arr[0];
 							String name = arr[1];
 
-							if (command.equals("add")) { //if add user
+							if (command.equals("map")) { // if send map
+								mapSize = Integer.parseInt(name);
+								map = new int[mapSize][mapSize];
+								for (int i = 0; i < mapSize; i++) {
+									msg = input.readLine();
+									arr = msg.split(" ");
+									for (int j = 0; j < arr.length; j++) {
+										map[i][j] = Integer.parseInt(arr[j]);
+									}
+								}
+							} else if (command.equals("add")) { // if add user
 								players.add(new Player(name));
 								// reAddUsers();
-							} else if (command.equals("delete")) { //if delete user
-								// users.remove(arr[1]);
-								// reAddUsers();
+							} else if (command.equals("delete")) { // if delete user
+								boolean found = false;
+								int count = 0;
+								
+								while (!found && count < players.size()) {
+									if (players.get(count).getName().equals(name)) {
+										players.remove(count);
+										found = true;
+									}
+									count++;
+								}
 							} else if (command.equals("xy")) {
 								double x = Double.parseDouble(arr[2]);
 								double y = Double.parseDouble(arr[3]);
@@ -147,8 +179,6 @@ public class Client {
 									count++;
 								}
 							}
-
-							msg = "";
 						}
 					}
 

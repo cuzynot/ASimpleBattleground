@@ -18,6 +18,8 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
+import data_structures.SimpleQueue;
+
 public class Server {
 
 	private ServerSocket serverSocket; // server socket for connection
@@ -25,6 +27,9 @@ public class Server {
 
 	private ArrayList<ClientObject> clients = new ArrayList<ClientObject>(); // list of clients
 	private JTextField t; // textfield for the port number
+	
+	private int mapSize = 10;
+	private static int[][] map;
 
 	/** Main
 	 * @param args parameters from command line
@@ -41,7 +46,6 @@ public class Server {
 		JFrame f = new JFrame();
 		JPanel p = new JPanel();
 		t = new JTextField(4);
-		t.setText("Port");
 		t.addActionListener(new SendActionListener());
 
 		// add textfield to panel, and panel to frame
@@ -50,14 +54,16 @@ public class Server {
 
 		// config frame
 		f.setSize(200, 100);
-		f.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		f.setVisible(true);
 	}
 
 	/** Go
 	 * Starts the server
 	 */
-	private void go(int port) { 
+	private void go(int port) {
+		randomizeMap();
+		
 		System.out.println("Waiting for a client connection..");
 
 		Socket client = null; //hold the client connection
@@ -88,6 +94,90 @@ public class Server {
 				System.out.println("Failed to close socket");
 			}
 			System.exit(-1);
+		}
+	}
+	
+	private void randomizeMap() {
+		// instantiate map
+		map = new int[mapSize][mapSize];
+
+		// randomize the walls
+		for (int i = 1; i < map.length - 1; i++) {
+			for (int j = 1; j < map[0].length - 1; j++) {
+				map[i][j] = (int)(Math.random() * 2) + 1; // either 1 (a wall) or 0 (open)
+			}
+		}
+
+		// make sure the exterior are walls
+		for (int i = 0; i < map.length; i++) {
+			map[0][i] = 1;
+			map[map[0].length - 1][i] = 1;
+		}
+		for (int i = 0; i < map[0].length; i++) {
+			map[i][0] = 1;
+			map[i][map.length - 1] = 1;
+		}
+
+		int prevx = 1;
+		int prevy = 1;
+
+		for (int i = 1; i < map.length - 1; i++) {
+			for (int j = 1; j < map[0].length - 1; j++) {
+				if (map[i][j] == 0) {
+					prevx = i;
+					prevy = j;
+				} else if (map[i][j] == 2) {
+					for (int k = prevx; k < i; k++) {
+						map[k][j] = 0;
+					}
+					for (int l = Math.min(prevy, j); l < Math.max(prevy, j); l++) {
+						map[prevx][l] = 0;
+					}
+
+					bfs(i, j);
+					prevx = i;
+					prevy = j;
+				}
+			}
+		}
+	}
+
+	private void bfs(int i, int j) {
+		SimpleQueue<Integer> queue = new SimpleQueue<Integer>();
+		queue.enqueue(i); // add x
+		queue.enqueue(j); // and y coordinates of the staring point
+
+		// bfs to make sure every cell in the map is connected
+		while (!queue.isEmpty()) {
+			int x = queue.dequeue();
+			int y = queue.dequeue();
+
+			// if current coordinate has not been visited yet
+			if (map[x][y] == 2) {
+				// make current cell blank and randomize adj cells
+				map[x][y] = 0;
+
+				// if any adj cell is open, they get added to the queue
+				if (x - 1 > 0) {
+					queue.enqueue(x - 1);
+					queue.enqueue(y);
+				}
+
+				if (y - 1 > 0) {
+					queue.enqueue(x);
+					queue.enqueue(y - 1);
+				}
+
+				if (x + 1 < map.length) {
+					queue.enqueue(x + 1);
+					queue.enqueue(y);
+				}
+
+				if (y + 1 < map[0].length) {
+					queue.enqueue(x);
+					queue.enqueue(y + 1);
+				}
+			}
 		}
 	}
 
@@ -183,7 +273,9 @@ public class Server {
 					}
 				} catch (IOException e) { 
 					System.out.println("Failed to receive msg from the client");
-					e.printStackTrace();
+					
+					// disconnect from server
+					delete(client.getUsername());
 				}
 			}
 
@@ -249,6 +341,16 @@ public class Server {
 
 				// update lists of active users for every client
 				add(username);
+				
+				output.println("map " + mapSize);
+				for (int i = 0; i < map.length; i++) {
+					String s = "";
+					for (int j = 0; j < map[0].length; j++) {
+						s += map[i][j] + " ";
+					}
+					output.println(s);
+				}
+				output.flush();
 
 			} catch(IOException e) {
 				e.printStackTrace();
