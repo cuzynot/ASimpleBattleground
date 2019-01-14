@@ -1,5 +1,7 @@
+package graphics;
 import java.awt.Color;
 import java.util.ArrayList;
+import main.Player;
 
 public class Display {
 	private int[][] map;
@@ -101,11 +103,13 @@ public class Display {
 					hitWall = true;
 				}
 
-				for (int i = 0; i < players.size(); i++) {
-					Player p = players.get(i);
-					if (p.getX() > mapX - PLAYER_WIDTH && p.getX() < mapX + PLAYER_WIDTH && p.getY() > mapY - PLAYER_WIDTH && p.getY() < mapY + PLAYER_WIDTH) {
-						if (dist(player, p) < closestDist) {
-							closestDist = dist(player, p);
+				if (players != null) {
+					for (int i = 0; i < players.size(); i++) {
+						Player p = players.get(i);
+						if (p.getX() > mapX - PLAYER_WIDTH && p.getX() < mapX + PLAYER_WIDTH && p.getY() > mapY - PLAYER_WIDTH && p.getY() < mapY + PLAYER_WIDTH) {
+							if (dist(player, p) < closestDist) {
+								closestDist = dist(player, p);
+							}
 						}
 					}
 				}
@@ -149,7 +153,7 @@ public class Display {
 					pixels[x + i * width] = darkerColorRGB; // make i sides darker
 				}
 			}
-			
+
 			// if a player is in sight
 			if (closestDist != Double.MAX_VALUE) {
 				double sub = height / closestDist / 2;

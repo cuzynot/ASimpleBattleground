@@ -1,3 +1,4 @@
+package main;
 /** [ChatClient.java]
  * Group chat client class
  * @author Josh Cai

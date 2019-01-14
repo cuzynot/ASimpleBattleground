@@ -1,3 +1,4 @@
+package main;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Graphics;
@@ -14,6 +15,8 @@ import java.awt.image.DataBufferInt;
 import java.util.ArrayList;
 
 import javax.swing.JFrame;
+
+import graphics.Display;
 
 public class Game extends JFrame {
 
@@ -298,10 +301,11 @@ public class Game extends JFrame {
 	// Key Listener
 	private class PlayerKeyListener implements KeyListener {
 		@Override
-		public void keyTyped (KeyEvent e){ }
+		public void keyTyped (KeyEvent e) {
+		}
 
 		@Override
-		public void keyPressed (KeyEvent e){
+		public void keyPressed (KeyEvent e) {
 			int key = e.getKeyCode();
 
 			if (key == KeyEvent.VK_W){
@@ -329,7 +333,7 @@ public class Game extends JFrame {
 		}
 
 		@Override
-		public void keyReleased (KeyEvent e){
+		public void keyReleased (KeyEvent e) {
 			int key = e.getKeyCode();
 
 			if (key == KeyEvent.VK_W){

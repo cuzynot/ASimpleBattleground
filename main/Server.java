@@ -1,3 +1,4 @@
+package main;
 /** [ChatServer.java]
  * Server class
  * @author Yili
@@ -6,6 +7,8 @@
 // imports for network communication
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -27,7 +30,7 @@ public class Server {
 
 	private ArrayList<ClientObject> clients = new ArrayList<ClientObject>(); // list of clients
 	private JTextField t; // textfield for the port number
-	
+
 	private int mapSize = 10;
 	private static int[][] map;
 
@@ -53,7 +56,7 @@ public class Server {
 		f.add(p);
 
 		// config frame
-		f.setSize(200, 100);
+		f.setSize(500, 500);
 		f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		f.setVisible(true);
 	}
@@ -63,7 +66,7 @@ public class Server {
 	 */
 	private void go(int port) {
 		randomizeMap();
-		
+
 		System.out.println("Waiting for a client connection..");
 
 		Socket client = null; //hold the client connection
@@ -96,7 +99,7 @@ public class Server {
 			System.exit(-1);
 		}
 	}
-	
+
 	private void randomizeMap() {
 		// instantiate map
 		map = new int[mapSize][mapSize];
@@ -273,7 +276,7 @@ public class Server {
 					}
 				} catch (IOException e) { 
 					System.out.println("Failed to receive msg from the client");
-					
+
 					// disconnect from server
 					delete(client.getUsername());
 				}
@@ -341,7 +344,7 @@ public class Server {
 
 				// update lists of active users for every client
 				add(username);
-				
+
 				output.println("map " + mapSize);
 				for (int i = 0; i < map.length; i++) {
 					String s = "";
