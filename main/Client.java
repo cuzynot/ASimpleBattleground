@@ -37,15 +37,15 @@ public class Client {
 	 * ChatClient 
 	 * constructor
 	 */
-	public Client() {
+	public Client(String address, int port, String name) {
 		running = true;
 
 		// get address and port and connect, then get username
 		players = new ArrayList<Player>();
 
-		address = "localhost"; // JOptionPane.showInputDialog("Enter IP Address:");
-		port = 5001; //Integer.parseInt(JOptionPane.showInputDialog("Enter port (enter a number or else the program will crash):"));
-		name = JOptionPane.showInputDialog("Enter username:").replace(" ", "");
+//		address = "localhost"; // JOptionPane.showInputDialog("Enter IP Address:");
+//		port = 5001; //Integer.parseInt(JOptionPane.showInputDialog("Enter port (enter a number or else the program will crash):"));
+//		name = JOptionPane.showInputDialog("Enter username:").replace(" ", "");
 
 		connect(address, port);
 

@@ -2,6 +2,8 @@ package main;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Graphics;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
 import java.awt.MouseInfo;
 import java.awt.Point;
 import java.awt.Toolkit;
@@ -22,7 +24,7 @@ public class Game extends JFrame {
 
 	// run
 	public static void main (String[] args){
-		new Game(new Client());
+		new Game(new Client("localhost", 5001, "blah"));
 	}
 
 	// Camera
@@ -52,7 +54,7 @@ public class Game extends JFrame {
 
 	// client object
 	private Client client;
-	
+
 	// list of players
 	private ArrayList<Player> players;
 
@@ -77,12 +79,13 @@ public class Game extends JFrame {
 		setResizable(false);
 		setTitle("A Simple Battleground");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		// setUndecorated(true);
 		setVisible(true);
 		setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
 
 		// make this frame full screen
-		//		GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices()[0];
-		//		gd.setFullScreenWindow(this);
+		GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices()[0];
+		gd.setFullScreenWindow(this);
 
 		// make cursor blank
 		cursorShown = false;
@@ -90,7 +93,7 @@ public class Game extends JFrame {
 
 		players = client.getPlayers();
 		map = client.getMap();
-		
+
 		// init Screen
 		display = new Display(map, SCREEN_WIDTH, SCREEN_HEIGHT, color); // screen = new Screen(map, mapWidth, mapHeight, textures, 640, 480);
 
@@ -236,13 +239,13 @@ public class Game extends JFrame {
 		} else {
 			g.drawImage(image, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, null);
 		}
-		
+
 		// draw players
 		// MAKE MORE EFFICIENT
-//		double m = player.getXDir() / player.getYDir();
-//		double b = player.getY() - m * player.getX();
-//
-		
+		//		double m = player.getXDir() / player.getYDir();
+		//		double b = player.getY() - m * player.getX();
+		//
+
 
 		bs.show();
 	}
@@ -251,7 +254,7 @@ public class Game extends JFrame {
 		if (player.getInGame()) {
 			// get current x position of the cursor
 			int curx = (int)(MouseInfo.getPointerInfo().getLocation().getX());
-			
+
 			// change rotational value according to how much the mouse has moved
 			// in relation to the center of the screen
 			player.setRotation(-(curx - SCREEN_WIDTH / 2) / 3500.0); // 1000 is an arbitrary value for tweaking sensitivity
@@ -264,10 +267,6 @@ public class Game extends JFrame {
 	//----------INNER CLASSES----------//
 	// Mouse motion listener
 	private class PlayerMouseListener implements MouseListener {
-
-		@Override
-		public void mouseClicked(MouseEvent e) {
-		}
 
 		@Override
 		public void mousePressed(MouseEvent e) {
@@ -290,22 +289,20 @@ public class Game extends JFrame {
 		}
 
 		@Override
-		public void mouseEntered(MouseEvent e) {
-		}
-
+		public void mouseClicked(MouseEvent e) {}
 		@Override
-		public void mouseExited(MouseEvent e) {
-		}
+		public void mouseEntered(MouseEvent e) {}
+		@Override
+		public void mouseExited(MouseEvent e) {}
 	}
 
 	// Key Listener
 	private class PlayerKeyListener implements KeyListener {
 		@Override
-		public void keyTyped (KeyEvent e) {
-		}
+		public void keyTyped(KeyEvent e) {}
 
 		@Override
-		public void keyPressed (KeyEvent e) {
+		public void keyPressed(KeyEvent e) {
 			int key = e.getKeyCode();
 
 			if (key == KeyEvent.VK_W){
@@ -333,7 +330,7 @@ public class Game extends JFrame {
 		}
 
 		@Override
-		public void keyReleased (KeyEvent e) {
+		public void keyReleased(KeyEvent e) {
 			int key = e.getKeyCode();
 
 			if (key == KeyEvent.VK_W){
