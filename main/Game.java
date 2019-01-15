@@ -75,7 +75,12 @@ public class Game extends JFrame {
 		image = new BufferedImage(SCREEN_WIDTH, SCREEN_HEIGHT, BufferedImage.TYPE_INT_RGB);
 		pixels = ((DataBufferInt)image.getRaster().getDataBuffer()).getData(); // links pixels to image 
 
-		// init JFrame
+		//		// init JFrame
+		//		PlayerKeyListener pkl = new PlayerKeyListener();
+		//		PlayerMouseListener pml = new PlayerMouseListener();
+		//		requestFocus();
+		addKeyListener(new PlayerKeyListener());
+		addMouseListener(new PlayerMouseListener());
 		setResizable(false);
 		setTitle("A Simple Battleground");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -89,7 +94,7 @@ public class Game extends JFrame {
 
 		// make cursor blank
 		cursorShown = false;
-		toggleCursor(cursorShown);
+		// toggleCursor(cursorShown);
 
 		players = client.getPlayers();
 		map = client.getMap();
@@ -111,10 +116,6 @@ public class Game extends JFrame {
 		}
 
 		player = new Player(client.getName(), x, y, 1, 0, 0, -1, "sniper"); // temp
-		PlayerKeyListener pkl = new PlayerKeyListener();
-		PlayerMouseListener pml = new PlayerMouseListener();
-		addKeyListener(pkl);
-		addMouseListener(pml);
 
 		// enter game loop
 		run();
@@ -260,13 +261,17 @@ public class Game extends JFrame {
 			player.setRotation(-(curx - SCREEN_WIDTH / 2) / 3500.0); // 1000 is an arbitrary value for tweaking sensitivity
 
 			// use robot to move mouse back to the center of the screen
-			player.getRobot().mouseMove((curx + SCREEN_WIDTH / 2) / 2, SCREEN_HEIGHT / 2);
+			// player.getRobot().mouseMove((curx + SCREEN_WIDTH / 2) / 2, SCREEN_HEIGHT / 2);
 		}
 	}
 
 	//----------INNER CLASSES----------//
 	// Mouse motion listener
 	private class PlayerMouseListener implements MouseListener {
+		
+		PlayerMouseListener() {
+			System.out.println("mouse works");
+		}
 
 		@Override
 		public void mousePressed(MouseEvent e) {
@@ -303,6 +308,7 @@ public class Game extends JFrame {
 
 		@Override
 		public void keyPressed(KeyEvent e) {
+			System.out.println("pressed");
 			int key = e.getKeyCode();
 
 			if (key == KeyEvent.VK_W){

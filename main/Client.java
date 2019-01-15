@@ -111,6 +111,10 @@ public class Client {
 	public void update(Player player) {
 		output.println("xy " + player.getName() + " " + player.getX() + " " + player.getY());
 	}
+	
+	public void disconnect() {
+		output.println("exit");
+	}
 
 
 	/* go
