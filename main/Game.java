@@ -1,9 +1,6 @@
 package main;
 import java.awt.Color;
 import java.awt.Cursor;
-import java.awt.Graphics;
-import java.awt.GraphicsDevice;
-import java.awt.GraphicsEnvironment;
 import java.awt.MouseInfo;
 import java.awt.Point;
 import java.awt.Toolkit;
@@ -11,20 +8,26 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferInt;
 import java.util.ArrayList;
 
 import javax.swing.JFrame;
 
 import graphics.Display;
+import player.Bullet;
+import player.Player;
 
 public class Game extends JFrame {
 
 	// run
 	public static void main (String[] args){
-		new Game(new Client("localhost", 5001, "blah"));
+		Thread t = new Thread(new Runnable() {
+			public void run() {
+
+				new Game(new Client("localhost", 5001, "second"));
+			}
+		});
+		t.start();
 	}
 
 	// Camera
@@ -37,9 +40,7 @@ public class Game extends JFrame {
 	private final int SCREEN_WIDTH;
 	private final int SCREEN_HEIGHT;
 
-	// images
-	private BufferedImage image;
-	private int[] pixels;
+	// map
 	private static int[][] map;
 
 	// cursors
@@ -60,6 +61,9 @@ public class Game extends JFrame {
 
 	// constructor
 	public Game(Client client) {
+		setFocusable(true);
+		requestFocusInWindow(true);
+
 		this.client = client;
 
 		color = new Color((int)(Math.random() * 255), (int)(Math.random() * 255), (int)(Math.random() * 255));
@@ -71,9 +75,6 @@ public class Game extends JFrame {
 
 		SCREEN_WIDTH = (int)(Toolkit.getDefaultToolkit().getScreenSize().getWidth());
 		SCREEN_HEIGHT = (int)(Toolkit.getDefaultToolkit().getScreenSize().getHeight());
-
-		image = new BufferedImage(SCREEN_WIDTH, SCREEN_HEIGHT, BufferedImage.TYPE_INT_RGB);
-		pixels = ((DataBufferInt)image.getRaster().getDataBuffer()).getData(); // links pixels to image 
 
 		//		// init JFrame
 		//		PlayerKeyListener pkl = new PlayerKeyListener();
@@ -88,22 +89,24 @@ public class Game extends JFrame {
 		setVisible(true);
 		setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
 
-		// make this frame full screen
-		GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices()[0];
-		gd.setFullScreenWindow(this);
-
 		// make cursor blank
 		cursorShown = false;
-		// toggleCursor(cursorShown);
+		toggleCursor(cursorShown);
 
+		player = client.getPlayer();
 		players = client.getPlayers();
 		map = client.getMap();
 
-		// init Screen
-		display = new Display(map, SCREEN_WIDTH, SCREEN_HEIGHT, color); // screen = new Screen(map, mapWidth, mapHeight, textures, 640, 480);
-
 		// spawn the player
 		spawnPlayer();
+
+		Thread t = new Thread(new Runnable() {
+			public void run() {
+				loop();
+			}
+		}
+				);
+		t.start();
 	}
 
 	// public methods
@@ -115,10 +118,22 @@ public class Game extends JFrame {
 			y = (int)(Math.random() * map[0].length);
 		}
 
-		player = new Player(client.getName(), x, y, 1, 0, 0, -1, "sniper"); // temp
+		player.setX(x);
+		player.setY(y);
+		player.setXDir(1);
+		player.setYDir(0);
+		player.setXPlane(0);
+		player.setYPlane(-1);
+		player.setHealth(player.getMaxHealth());
+		player.setAmmo(player.getMaxAmmo());
+		// player = new Player(client.getName(), x, y, 1, 0, 0, -1, "sniper"); // temp
+
+		// init Screen
+		display = new Display(map, SCREEN_WIDTH, SCREEN_HEIGHT, color, player, players); // screen = new Screen(map, mapWidth, mapHeight, textures, 640, 480)
+		add(display);
 
 		// enter game loop
-		run();
+		loop();
 	}
 
 	// private methods
@@ -135,26 +150,24 @@ public class Game extends JFrame {
 	}
 
 	// game loop
-	private void run() {
+	private void loop() {
 		while(true) {
+			updatePlayer();
+			display.update();
+			client.update(player);
+
+			display.repaint();
+
 			try {
-				Thread.sleep(5);
+				Thread.sleep(20);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
-			mouseMoved();
-
-			update();
-			display.update(player, pixels, players);
-			client.update(player);
-
-			render(); //displays to the screen unrestricted time
 		}
-
 	}
 
 	// update camera view
-	private void update() {
+	private void updatePlayer() {
 		// get player variables
 		boolean forward = player.getForward();
 		boolean left = player.getLeft();
@@ -165,43 +178,43 @@ public class Game extends JFrame {
 		double y = player.getY();
 		double xDir = player.getXDir();
 		double yDir = player.getYDir();
-		double speed = player.getBuild().getSpeed();
+		double speed = player.getSpeed();
 		double rotation = player.getRotation();
 		double xPlane = player.getXPlane();
 		double yPlane = player.getYPlane();
 
 		// move player
 		if (forward){
-			if (map[(int)(x + xDir * speed)][(int)y] == 0){
+			if (map[(int)(x + xDir * speed)][(int)y] == 0) {
 				x += xDir * speed;
 			}
-			if (map[(int)x][(int)(y + yDir * speed)] == 0){
+			if (map[(int)x][(int)(y + yDir * speed)] == 0) {
 				y += yDir * speed;
 			}
 		}
 		if (back){
-			if (map[(int)(x - xDir * speed)][(int)y] == 0){
+			if (map[(int)(x - xDir * speed)][(int)y] == 0) {
 				x -= xDir * speed;
 			}
-			if (map[(int)x][(int)(y - yDir * speed)] == 0){
+			if (map[(int)x][(int)(y - yDir * speed)] == 0) {
 				y -= yDir * speed;
 			}
 		}
 
 		// reduced speed on strafing
 		if (left){
-			if (map[(int)(x - xPlane * speed)][(int)y] == 0){
+			if (map[(int)(x - xPlane * speed)][(int)y] == 0) {
 				x -= xPlane * speed;
 			}
-			if (map[(int)x][(int)(y - yPlane * speed)] == 0){
+			if (map[(int)x][(int)(y - yPlane * speed)] == 0) {
 				y -= yPlane * speed;
 			}
 		}
 		if (right){
-			if (map[(int)(x + xPlane * speed)][(int)y] == 0){
+			if (map[(int)(x + xPlane * speed)][(int)y] == 0) {
 				x += xPlane * speed;
 			}
-			if (map[(int)x][(int)(y + yPlane * speed)] == 0){
+			if (map[(int)x][(int)(y + yPlane * speed)] == 0) {
 				y += yPlane * speed;
 			}
 		}
@@ -221,57 +234,71 @@ public class Game extends JFrame {
 		player.setYDir(yDir);
 		player.setXPlane(xPlane);
 		player.setYPlane(yPlane);
-	}
 
-	private void render() {
-		BufferStrategy bs = getBufferStrategy(); // used when rendering so the screen updates are smoother
-
-		if(bs == null) {
-			createBufferStrategy(3);
-			return;
+		if (player.inGame()) {
+			mouseMoved();
+			mousePressed();
 		}
+		
+		for (int i = 0; i < player.getBullets().size(); i++) {
+			Bullet bullet = player.getBullets().get(i);
+			bullet.setX(bullet.getX() + bullet.getXDir() * 0.2);
+			bullet.setY(bullet.getY() + bullet.getYDir() * 0.2);
 
-		Graphics g = bs.getDrawGraphics();
-		if (player.getClickedRight()) { // if the player is scoped in
-			int zoomW = (int)(image.getWidth() * player.getBuild().getZoom());
-			int zoomH = (int)(image.getHeight() * player.getBuild().getZoom());
-			BufferedImage sub = image.getSubimage(zoomW, zoomH, image.getWidth() - zoomW * 2, image.getHeight() - zoomH * 2);
-			g.drawImage(sub, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, null);
-		} else {
-			g.drawImage(image, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, null);
+			double bx = bullet.getX();
+			double by = bullet.getY();
+
+			// System.out.println("bb " + bx + " " + by);
+
+			if (map[(int)(bx)][(int)(by)] != 0 || bx < 0 || bx > map.length || by < 0 || by > map[0].length) {
+				System.out.println("hit wall");
+				player.getBullets().remove(i);
+				i--;
+
+			} else {
+				int j = 0;
+				boolean hit = false;
+				while (!hit && j < players.size()) {
+					if (bullet.collides(players.get(j))) {
+						client.getOutput().println("hit " + players.get(j).getName() + " " + player.getDamage());
+						player.getBullets().remove(i);
+						i--;
+
+						System.out.println("hit " + players.get(j).getName());
+						hit = true;
+					}
+					j++;
+				}
+			}
 		}
-
-		// draw players
-		// MAKE MORE EFFICIENT
-		//		double m = player.getXDir() / player.getYDir();
-		//		double b = player.getY() - m * player.getX();
-		//
-
-
-		bs.show();
 	}
 
 	private void mouseMoved() {
-		if (player.getInGame()) {
-			// get current x position of the cursor
-			int curx = (int)(MouseInfo.getPointerInfo().getLocation().getX());
+		// get current x position of the cursor
+		int curx = (int)(MouseInfo.getPointerInfo().getLocation().getX());
 
-			// change rotational value according to how much the mouse has moved
-			// in relation to the center of the screen
-			player.setRotation(-(curx - SCREEN_WIDTH / 2) / 3500.0); // 1000 is an arbitrary value for tweaking sensitivity
+		// change rotational value according to how much the mouse has moved
+		// in relation to the center of the screen
+		player.setRotation(-(curx - SCREEN_WIDTH / 2) / 3500.0); // 1000 is an arbitrary value for tweaking sensitivity
 
-			// use robot to move mouse back to the center of the screen
-			// player.getRobot().mouseMove((curx + SCREEN_WIDTH / 2) / 2, SCREEN_HEIGHT / 2);
+		// use robot to move mouse back to the center of the screen
+		player.getRobot().mouseMove((curx + SCREEN_WIDTH / 2) / 2, SCREEN_HEIGHT / 2);
+	}
+
+	private void mousePressed() {
+		if (player.getClickedLeft() && !player.reloading()) {
+			Bullet bullet = new Bullet(player.getX(), player.getY(), player.getXDir(), player.getYDir());
+			player.getBullets().add(bullet);
+			player.setAmmo(player.getAmmo() - 1);
+			//			if (player.getAmmo() <= 0) {
+			//				player.setIsReloading(true);
+			//			}
 		}
 	}
 
 	//----------INNER CLASSES----------//
 	// Mouse motion listener
 	private class PlayerMouseListener implements MouseListener {
-		
-		PlayerMouseListener() {
-			System.out.println("mouse works");
-		}
 
 		@Override
 		public void mousePressed(MouseEvent e) {
@@ -308,7 +335,6 @@ public class Game extends JFrame {
 
 		@Override
 		public void keyPressed(KeyEvent e) {
-			System.out.println("pressed");
 			int key = e.getKeyCode();
 
 			if (key == KeyEvent.VK_W){
@@ -323,7 +349,7 @@ public class Game extends JFrame {
 				spawnPlayer();
 			} else if (key == KeyEvent.VK_ESCAPE){
 				player.setRotation(0);
-				player.setInGame(!player.getInGame());
+				player.setInGame(!player.inGame());
 
 				cursorShown = !cursorShown;
 				toggleCursor(cursorShown);

@@ -56,7 +56,7 @@ public class Server {
 		f.add(p);
 
 		// config frame
-		f.setSize(500, 500);
+		f.setSize(300, 300);
 		f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		f.setVisible(true);
 	}
@@ -184,15 +184,31 @@ public class Server {
 		}
 	}
 
-	/** print
+	/** printToAll
 	 * Takes in username of client and message to send
 	 * and sends it to all active clients
 	 */
-	private void print(String msg) {
+	private void printToAll(String username, String msg) {
 		for (int i = 0; i < clients.size(); i++) {
 			ClientObject cur = clients.get(i);
-			cur.getOutput().println(msg);
-			cur.getOutput().flush();
+			if (!cur.getUsername().equals(username)) {
+				cur.getOutput().println(msg);
+				cur.getOutput().flush();
+			}
+		}
+	}
+
+	private void printToOne(String name, String msg) {
+		int i = 0;
+		boolean found = false;
+		while (!found && i < clients.size()) {
+			ClientObject cur = clients.get(i);
+			if (cur.getUsername().equals(name)) {
+				cur.getOutput().println(msg);
+				cur.getOutput().flush();
+				found = true;
+			}
+			i++;
 		}
 	}
 
@@ -270,12 +286,15 @@ public class Server {
 							// truncate message
 							// msg = msg.substring(3);
 							// print message to everybody
-							print(msg);
+							printToAll(client.getUsername(), msg);
+						} else if (msg.startsWith("hit ")) {
+							String[] arr = msg.split(" ");
+							printToOne(arr[1], msg);
 						}
 
 					}
 				} catch (IOException e) { 
-					System.out.println("Failed to receive msg from the client");
+					System.out.println("Failed to receive msg from the client, deleting " + client.getUsername());
 
 					// disconnect from server
 					delete(client.getUsername());

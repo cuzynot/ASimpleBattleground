@@ -15,6 +15,9 @@ import java.util.ArrayList;
 
 import javax.swing.JOptionPane;
 
+import player.Player;
+import player.builds.Soldier;
+
 public class Client {
 
 	// init vars and gui
@@ -22,6 +25,7 @@ public class Client {
 	private BufferedReader input;
 	private PrintWriter output;
 
+	private Player player;
 	private ArrayList<Player> players;
 	private boolean running;
 	private String build;
@@ -39,13 +43,16 @@ public class Client {
 	 */
 	public Client(String address, int port, String name) {
 		running = true;
+		this.address = address;
+		this.port = port;
+		this.name = name;
 
 		// get address and port and connect, then get username
 		players = new ArrayList<Player>();
 
-//		address = "localhost"; // JOptionPane.showInputDialog("Enter IP Address:");
-//		port = 5001; //Integer.parseInt(JOptionPane.showInputDialog("Enter port (enter a number or else the program will crash):"));
-//		name = JOptionPane.showInputDialog("Enter username:").replace(" ", "");
+		//		address = "localhost"; // JOptionPane.showInputDialog("Enter IP Address:");
+		//		port = 5001; //Integer.parseInt(JOptionPane.showInputDialog("Enter port (enter a number or else the program will crash):"));
+		//		name = JOptionPane.showInputDialog("Enter username:").replace(" ", "");
 
 		connect(address, port);
 
@@ -75,6 +82,9 @@ public class Client {
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
+		
+		player = new Soldier(name); // temp
+		
 
 		// start communication with server
 		go();
@@ -88,6 +98,10 @@ public class Client {
 	//	}
 
 	// getters
+	public Player getPlayer() {
+		return player;
+	}
+	
 	public PrintWriter getOutput() {
 		return output;
 	}
@@ -110,10 +124,19 @@ public class Client {
 
 	public void update(Player player) {
 		output.println("xy " + player.getName() + " " + player.getX() + " " + player.getY());
+		output.flush();
 	}
-	
+
 	public void disconnect() {
 		output.println("exit");
+		output.flush();
+		try {
+			socket.close();
+			input.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		output.close();
 	}
 
 
@@ -132,18 +155,21 @@ public class Client {
 
 			public void run(){
 				try {
-					input.readLine();
-					
+					//input.readLine();
+
 					while (running) {
 						if (input.ready()) { // check for an incoming messge
 							msg = input.readLine(); // read the message
 							arr = msg.split(" ");
 
 							String command = arr[0];
-							String name = arr[1];
+							String second = "";
+							if (arr.length > 1) {
+								second = arr[1];
+							}
 
 							if (command.equals("map")) { // if send map
-								mapSize = Integer.parseInt(name);
+								mapSize = Integer.parseInt(second);
 								map = new int[mapSize][mapSize];
 								for (int i = 0; i < mapSize; i++) {
 									msg = input.readLine();
@@ -153,14 +179,14 @@ public class Client {
 									}
 								}
 							} else if (command.equals("add")) { // if add user
-								players.add(new Player(name));
+								players.add(new Player(second));
 								// reAddUsers();
 							} else if (command.equals("delete")) { // if delete user
 								boolean found = false;
 								int count = 0;
-								
+
 								while (!found && count < players.size()) {
-									if (players.get(count).getName().equals(name)) {
+									if (players.get(count).getName().equals(second)) {
 										players.remove(count);
 										found = true;
 									}
@@ -169,6 +195,8 @@ public class Client {
 							} else if (command.equals("xy")) {
 								double x = Double.parseDouble(arr[2]);
 								double y = Double.parseDouble(arr[3]);
+								
+								// System.out.println("xy of " + second);
 
 								boolean found = false;
 								int count = 0;
@@ -176,13 +204,17 @@ public class Client {
 								while (!found && count < players.size()) {
 									Player p = players.get(count);
 
-									if (p.getName().equals(name)) {
+									if (p.getName().equals(second)) {
 										p.setX(x);
 										p.setY(y);
 										found = true;
 									}
 									count++;
 								}
+							} else if (command.equals("hit")) {
+								double damage = Double.parseDouble(arr[2]);
+								System.out.println("took " + damage + "dmg");
+								player.setHealth(player.getHealth() - damage);
 							}
 						}
 					}

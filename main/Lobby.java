@@ -3,20 +3,19 @@ package main;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
-import java.awt.GraphicsDevice;
-import java.awt.GraphicsEnvironment;
 import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferInt;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
 import graphics.Display;
+import player.Player;
+import player.builds.Soldier;
 
 public class Lobby {
 
@@ -31,7 +30,6 @@ public class Lobby {
 	private Game game;
 
 	private BufferedImage image;
-	private int[] pixels;
 	private Player player;
 
 	private JFrame frame;
@@ -43,7 +41,7 @@ public class Lobby {
 	private int curString;
 	private int counter;
 	private Color color;
-	
+
 	private LobbyKeyListener lkl;
 	private LobbyMouseListener lml;
 
@@ -65,7 +63,7 @@ public class Lobby {
 
 		// make new panel
 		panel = new LobbyPanel();
-		
+
 		// listeners
 		lkl = new LobbyKeyListener();
 		lml = new LobbyMouseListener();
@@ -75,17 +73,10 @@ public class Lobby {
 		frame.add(panel);
 		frame.addKeyListener(lkl);
 		frame.addMouseListener(lml);
-		//frame.setUndecorated(true);
+		//		frame.setUndecorated(true);
 		frame.setVisible(true);
 		frame.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-		// make frame fullscreen for macs(?)
-		GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices()[0];
-		gd.setFullScreenWindow(frame);
-
-		image = new BufferedImage(SCREEN_WIDTH, SCREEN_HEIGHT, BufferedImage.TYPE_INT_RGB);
-		pixels = ((DataBufferInt)image.getRaster().getDataBuffer()).getData(); // links pixels to image 
 
 		int[][] map = {
 				{1, 1, 1, 1, 1},
@@ -94,16 +85,17 @@ public class Lobby {
 				{1, 0, 0, 0, 1},
 				{1, 1, 1, 1, 1},
 		};
-		Display d = new Display(map, SCREEN_WIDTH, SCREEN_HEIGHT, color);
-		player = new Player("null", 2.5, 2.5, 1, 0, 0, -1, "soldier");
+		player = new Soldier("null", 2.5, 2.5, 1, 0, 0, -1);
+		Display display = new Display(map, SCREEN_WIDTH, SCREEN_HEIGHT, color, player, null);
+		image = display.getImage();
 
 		while (true) {
 			update();
-			d.update(player, pixels, null);
+			display.update();
 			panel.repaint();
 
 			try {
-				Thread.sleep(20);
+				Thread.sleep(30);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
@@ -174,7 +166,7 @@ public class Lobby {
 		@Override
 		public void keyPressed(KeyEvent e) {
 			int key = e.getKeyCode();
-			
+
 			String s = "";
 			if (curString == 0) {
 				s = ip.getString();
@@ -197,10 +189,14 @@ public class Lobby {
 			} else if (key == KeyEvent.VK_ENTER) {
 				System.out.println("connecting to " + ip.getString() + " " + port.getString() + " " + name.getString());
 				client = new Client(ip.getString(), Integer.parseInt(port.getString()), name.getString());
-				frame.dispose();
-				frame.removeKeyListener(lkl);
-				frame.removeMouseListener(lml);
-				game = new Game(client);
+				//				client = new Client("localhost", 5001, "asdfoaj");
+
+				Thread t = new Thread(new Runnable() {
+					public void run() {
+						new Game(client);
+					}
+				});
+				t.start();
 			} else if (key != KeyEvent.VK_SPACE) {
 				// } else if ((key != KeyEvent.VK_SHIFT) && (key != KeyEvent.VK_CONTROL) && (key != KeyEvent.VK_ALT)){
 				char c = e.getKeyChar();

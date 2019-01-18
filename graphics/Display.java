@@ -1,40 +1,97 @@
 package graphics;
 import java.awt.Color;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferInt;
 import java.util.ArrayList;
-import main.Player;
 
-public class Display {
+import javax.swing.JPanel;
+
+import player.Player;
+
+public class Display extends JPanel {
+
 	private int[][] map;
-	private int width, height;
+	private final int SCREEN_WIDTH, SCREEN_HEIGHT;
+	private final int CROSSHAIR_LENGTH;
 
-	private final int DARK_GRAY;
-	private final int GRAY;
-	private final int BLACK;
-	private final double PLAYER_WIDTH;
+	private static final int DARK_GRAY = Color.DARK_GRAY.getRGB();
+	private static final int GRAY = Color.GRAY.getRGB();
+	private static final int BLACK = Color.BLACK.getRGB();
+	private static final double PLAYER_WIDTH = 0.5;
 
-	private Color color;
+	// private Color color;
 	private int colorRGB;
 	private int darkerColorRGB;
+	private Font font;
+
+	private Player player;
+	private ArrayList<Player> players;
+
+	// images
+	private BufferedImage image;
+	private int[] pixels;
 
 	// constructor
-	public Display(int[][] m, int w, int h, Color c) {
-		DARK_GRAY = Color.DARK_GRAY.getRGB();
-		GRAY = Color.GRAY.getRGB();
-		BLACK = Color.BLACK.getRGB();
-		PLAYER_WIDTH = 0.5;
-
+	public Display(int[][] m, int w, int h, Color c, Player p, ArrayList<Player> ps) {
+		requestFocus(true);
 		map = m;
-		width = w;
-		height = h;
-		color = c;
-		colorRGB = color.getRGB();
-		darkerColorRGB = color.darker().getRGB();
+		SCREEN_WIDTH = w;
+		SCREEN_HEIGHT = h;
+		player = p;
+		players = ps;
+		colorRGB = c.getRGB();
+		darkerColorRGB = c.darker().getRGB();
+
+		CROSSHAIR_LENGTH = SCREEN_WIDTH / 100;
+		font = new Font("Lora", Font.PLAIN, SCREEN_WIDTH / 50);
+
+		image = new BufferedImage(SCREEN_WIDTH, SCREEN_HEIGHT, BufferedImage.TYPE_INT_RGB);
+		pixels = ((DataBufferInt)image.getRaster().getDataBuffer()).getData(); // links pixels to image 
+	}
+
+	public BufferedImage getImage() {
+		return image;
+	}
+
+	public void paintComponent(Graphics g) {
+		// super.paintComponent(g);
+
+		// draw the background rotating image
+		// g.drawImage(image, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, null);
+
+		if (player.getClickedRight()) { // if the player is scoped in
+			int zoomW = (int)(image.getWidth() * player.getZoom());
+			int zoomH = (int)(image.getHeight() * player.getZoom());
+			BufferedImage sub = image.getSubimage(zoomW, zoomH, image.getWidth() - zoomW * 2, image.getHeight() - zoomH * 2);
+			g.drawImage(sub, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, null);
+		} else {
+			g.drawImage(image, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, null);
+		}
+
+		// draw crosshair
+		g.setColor(Color.WHITE);
+		g.drawLine(SCREEN_WIDTH / 2 - CROSSHAIR_LENGTH, SCREEN_HEIGHT / 2, SCREEN_WIDTH / 2 + CROSSHAIR_LENGTH, SCREEN_HEIGHT / 2);
+		g.drawLine(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 - CROSSHAIR_LENGTH, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 + CROSSHAIR_LENGTH);
+
+		// draw health
+		g.setColor(Color.GREEN);
+		g.fillRect(0, SCREEN_HEIGHT * 19 / 20, (int)(player.getHealth() * SCREEN_WIDTH / player.getMaxHealth()), SCREEN_HEIGHT / 20);
+
+		// draw players list
+		g.setFont(font);
+		g.setColor(Color.BLACK);
+		if (players != null) {
+			for (int i = 0; i < players.size(); i++) {
+				g.drawString(players.get(i).getName(), SCREEN_WIDTH * 9 / 10, SCREEN_HEIGHT / 20 * (i + 1));
+			}
+		}
 	}
 
 	// recalculates how the screen should look to the user based on their position in the map
 	// returns the updated array of pixels to the Game class
-	public void update (Player player, int[] pixels, ArrayList<Player> players) {
-
+	public void update() {
 		// clear screen
 		for (int i = 0; i < pixels.length / 2; i++){
 			pixels[i] = DARK_GRAY;
@@ -45,8 +102,8 @@ public class Display {
 
 		// loops through every vertical bar on the screen and casts a ray 
 		// to figure out what wall should be on the screen at that vertical bar
-		for (int x = 0; x < width; x++){
-			double cameraX = 2 * x / (double)(width) - 1; // x-coordinate of the current vertical stripe on the camera plane
+		for (int x = 0; x < SCREEN_WIDTH; x++){
+			double cameraX = 2 * x / (double)(SCREEN_WIDTH) - 1; // x-coordinate of the current vertical stripe on the camera plane
 
 			// make a vector for the ray
 			double rayDirX = player.getXDir() + player.getXPlane() * cameraX;
@@ -124,44 +181,44 @@ public class Display {
 				perpWallDist = Math.abs((mapY - player.getY() + (1 - stepY) / 2) / rayDirY);    
 			}
 
-			// now calculate the height of the wall based on the distance from the camera
+			// now calculate the SCREEN_HEIGHT of the wall based on the distance from the camera
 			int lineHeight;
 			if (perpWallDist > 0) {
-				lineHeight = Math.abs((int)(height / perpWallDist));
+				lineHeight = Math.abs((int)(SCREEN_HEIGHT / perpWallDist));
 			} else {
-				lineHeight = height;
+				lineHeight = SCREEN_HEIGHT;
 			}
 
 			// calculate lowest and highest pixel to fill in current stripe
-			int drawStart = -lineHeight / 2 + height / 2;
+			int drawStart = -lineHeight / 2 + SCREEN_HEIGHT / 2;
 			if (drawStart < 0){
 				drawStart = 0;
 			}
 
-			int drawEnd = lineHeight / 2 + height / 2;
-			if (drawEnd >= height){
-				drawEnd = height - 1;
+			int drawEnd = lineHeight / 2 + SCREEN_HEIGHT / 2;
+			if (drawEnd >= SCREEN_HEIGHT){
+				drawEnd = SCREEN_HEIGHT - 1;
 			}
 
 			// calculate y coordinate on texture
 			for (int i = drawStart; i < drawEnd; i++) {
-				// int texi = (((i*2 - height + lineHeight) << 6) / lineHeight) / 2;
+				// int texi = (((i*2 - SCREEN_HEIGHT + lineHeight) << 6) / lineHeight) / 2;
 
 				if (side == 0) {
-					pixels[x + i * width] = colorRGB;
+					pixels[x + i * SCREEN_WIDTH] = colorRGB;
 				} else {
-					pixels[x + i * width] = darkerColorRGB; // make i sides darker
+					pixels[x + i * SCREEN_WIDTH] = darkerColorRGB; // make i sides darker
 				}
 			}
 
 			// if a player is in sight
 			if (closestDist != Double.MAX_VALUE) {
-				double sub = height / closestDist / 2;
-				if (sub > height / 2) {
-					sub = height / 2;
+				double sub = SCREEN_HEIGHT / closestDist / 2;
+				if (sub > SCREEN_HEIGHT / 2) {
+					sub = SCREEN_HEIGHT / 2;
 				}
-				for (int i = (int)(height / 2 - sub); i < (int)(height / 2 + sub); i++) {
-					pixels[x + i * width] = BLACK;
+				for (int i = (int)(SCREEN_HEIGHT / 2 - sub); i < (int)(SCREEN_HEIGHT / 2 + sub); i++) {
+					pixels[x + i * SCREEN_WIDTH] = BLACK;
 				}
 			}
 		}
