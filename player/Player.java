@@ -9,18 +9,20 @@ public class Player implements Moveable{
 	private boolean clickedLeft, clickedRight; // mouse clicked
 	private boolean left, right, forward, back; // keys pressed
 	private boolean inGame;
-	private boolean reloading;
-	private boolean respawning;
+	
+	private int reloading;
+	private int respawning;
 
 	private double x, y; // player positions
 	private double xDir, yDir; // player directions vectors
 	private double xPlane, yPlane; // farthest edge of the camera's view
-	private double rotation;
-
+	private double rotation; // player camera rotation
+	
+	private int score;
 	private String name;
 	private Robot robot;
-
 	private SimpleLinkedList<Bullet> bullets;
+	private long lastFired;
 	
 	protected int ammo;
 	protected int maxAmmo;
@@ -41,6 +43,7 @@ public class Player implements Moveable{
 		this.xPlane = xp;
 		this.yPlane = yp;
 		this.inGame = true;
+		this.score = 0;
 		this.bullets = new SimpleLinkedList<Bullet>();
 
 		try {
@@ -91,16 +94,24 @@ public class Player implements Moveable{
 		return inGame;
 	}
 
-	public boolean reloading() {
+	public int getReloading() {
 		return reloading;
 	}
 	
-	public boolean respawning() {
+	public int getRespawning() {
 		return respawning;
+	}
+	
+	public int getScore() {
+		return score;
 	}
 
 	public int getAmmo() {
 		return ammo;
+	}
+	
+	public long getLastFired() {
+		return lastFired;
 	}
 	
 	public int getMaxAmmo() {
@@ -200,16 +211,24 @@ public class Player implements Moveable{
 		this.inGame = inGame;
 	}
 
-	public void setIsReloading(boolean reloading) {
+	public void setReloading(int reloading) {
 		this.reloading = reloading;
 	}
 	
-	public void setIsRespawning(boolean respawning) {
+	public void setRespawning(int respawning) {
 		this.respawning = respawning;
+	}
+	
+	public void setScore(int score) {
+		this.score = score;
 	}
 
 	public void setAmmo(int ammo) {
 		this.ammo = ammo;
+	}
+	
+	public void setLastFired(long lastFired) {
+		this.lastFired = lastFired;
 	}
 
 	public void setX(double x) {

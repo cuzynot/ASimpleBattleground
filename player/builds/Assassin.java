@@ -18,7 +18,7 @@ public class Assassin extends Player {
 	private void init() {
 		this.maxHealth = 1900;
 		this.health = maxHealth;
-		this.speed = 1.7;
+		this.speed = 0.085;
 		this.damage = 520;
 		this.fireRate = 360;
 		this.maxAmmo = 6;

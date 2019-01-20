@@ -17,7 +17,7 @@ public class Soldier extends Player {
 	private void init() {
 		this.maxHealth = 2200;
 		this.health = maxHealth;
-		this.speed = 0.12;
+		this.speed = 0.06;
 		this.damage = 135;
 		this.fireRate = 100;
 		this.maxAmmo = 30;

@@ -13,7 +13,9 @@ import java.awt.image.BufferedImage;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
+import graphics.Button;
 import graphics.Display;
+import graphics.Field;
 import player.Player;
 import player.builds.Soldier;
 
@@ -38,9 +40,11 @@ public class Lobby {
 	private Field ip;
 	private Field port;
 	private Field name;
+	private Button enter;
 	private int curString;
 	private int counter;
 	private Color color;
+	private Display display;
 
 	private LobbyKeyListener lkl;
 	private LobbyMouseListener lml;
@@ -54,9 +58,10 @@ public class Lobby {
 		SCREEN_WIDTH = (int)(Toolkit.getDefaultToolkit().getScreenSize().getWidth());
 		SCREEN_HEIGHT = (int)(Toolkit.getDefaultToolkit().getScreenSize().getHeight());
 		ROTATE_SPEED = 0.02;
-		ip = new Field(SCREEN_WIDTH / 3, SCREEN_HEIGHT / 2 - SCREEN_HEIGHT / 16, SCREEN_WIDTH * 2/ 3, SCREEN_HEIGHT / 2);
-		port = new Field(SCREEN_WIDTH / 3, SCREEN_HEIGHT / 2, SCREEN_WIDTH * 2/ 3, SCREEN_HEIGHT / 2 + SCREEN_HEIGHT / 16);
-		name = new Field(SCREEN_WIDTH / 3, SCREEN_HEIGHT / 2 + SCREEN_HEIGHT / 16, SCREEN_WIDTH * 2/ 3, SCREEN_HEIGHT / 2 + SCREEN_HEIGHT / 8);
+		ip = new Field(SCREEN_WIDTH / 3, SCREEN_HEIGHT / 2 - SCREEN_HEIGHT / 16, SCREEN_WIDTH * 2 / 3, SCREEN_HEIGHT / 2);
+		port = new Field(SCREEN_WIDTH / 3, SCREEN_HEIGHT / 2, SCREEN_WIDTH * 2 / 3, SCREEN_HEIGHT / 2 + SCREEN_HEIGHT / 16);
+		name = new Field(SCREEN_WIDTH / 3, SCREEN_HEIGHT / 2 + SCREEN_HEIGHT / 16, SCREEN_WIDTH * 2 / 3, SCREEN_HEIGHT / 2 + SCREEN_HEIGHT / 8);
+		enter = new Button(SCREEN_WIDTH / 2 - SCREEN_HEIGHT / 16, (int)(SCREEN_HEIGHT / 1.2) - SCREEN_HEIGHT / 32, SCREEN_WIDTH / 2 + SCREEN_HEIGHT / 16, (int)(SCREEN_HEIGHT / 1.2) + SCREEN_HEIGHT / 32, "ENTER");
 		curString = 0;
 		counter = 0;
 		color = new Color((int)(Math.random() * 255), (int)(Math.random() * 255), (int)(Math.random() * 255));
@@ -73,10 +78,10 @@ public class Lobby {
 		frame.add(panel);
 		frame.addKeyListener(lkl);
 		frame.addMouseListener(lml);
-		//		frame.setUndecorated(true);
+		frame.setUndecorated(true);
 		frame.setVisible(true);
 		frame.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
 		int[][] map = {
 				{1, 1, 1, 1, 1},
@@ -86,23 +91,21 @@ public class Lobby {
 				{1, 1, 1, 1, 1},
 		};
 		player = new Soldier("null", 2.5, 2.5, 1, 0, 0, -1);
-		Display display = new Display(map, SCREEN_WIDTH, SCREEN_HEIGHT, color, player, null);
+		display = new Display(map, SCREEN_WIDTH, SCREEN_HEIGHT, color, player, null);
 		image = display.getImage();
 
 		while (true) {
-			update();
-			display.update();
-			panel.repaint();
+			updatePlayer();
 
 			try {
-				Thread.sleep(30);
+				Thread.sleep(20);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
 		}
 	}
 
-	private void update() {
+	private void updatePlayer() {
 		// camera rotation
 		double xDir = player.getXDir();
 		double yDir = player.getYDir();
@@ -122,44 +125,18 @@ public class Lobby {
 		player.setXPlane(xPlane);
 		player.setYPlane(yPlane);
 	}
-
-	private class Field {
-		private final static int MAX_LENGTH = 25;
-		private int x1;
-		private int y1;
-		private int x2;
-		private int y2;
-		private String s;
-
-		Field(int x1, int y1, int x2, int y2) {
-			this.x1 = x1;
-			this.y1 = y1;
-			this.x2 = x2;
-			this.y2 = y2;
-			s = "";
-		}
-
-		// setters
-		public void setString(String s) {
-			this.s = s;
-		}
-
-		// getters
-		public int getX1() {
-			return x1;
-		}
-		public int getY1() {
-			return y1;
-		}
-		public int getX2() {
-			return x2;
-		}
-		public int getY2() {
-			return y2;
-		}
-		public String getString() {
-			return s;
-		}
+	
+	private void enterGame() {
+		System.out.println("connecting to " + ip.getString() + " " + port.getString() + " " + name.getString());
+		client = new Client(ip.getString(), Integer.parseInt(port.getString()), name.getString());
+		//				client = new Client("localhost", 5001, "asdfoaj");
+		frame.dispose();
+		Thread t = new Thread(new Runnable() {
+			public void run() {
+				new Game(client);
+			}
+		});
+		t.start();
 	}
 
 	private class LobbyKeyListener implements KeyListener {
@@ -187,20 +164,11 @@ public class Lobby {
 					}
 				}
 			} else if (key == KeyEvent.VK_ENTER) {
-				System.out.println("connecting to " + ip.getString() + " " + port.getString() + " " + name.getString());
-				client = new Client(ip.getString(), Integer.parseInt(port.getString()), name.getString());
-				//				client = new Client("localhost", 5001, "asdfoaj");
-
-				Thread t = new Thread(new Runnable() {
-					public void run() {
-						new Game(client);
-					}
-				});
-				t.start();
+				enterGame();
 			} else if (key != KeyEvent.VK_SPACE) {
 				// } else if ((key != KeyEvent.VK_SHIFT) && (key != KeyEvent.VK_CONTROL) && (key != KeyEvent.VK_ALT)){
 				char c = e.getKeyChar();
-				if (s.length() < Field.MAX_LENGTH) {
+				if (s.length() < Field.getMaxLength()) {
 					if (curString == 0) {
 						ip.setString((s + c).toLowerCase());
 					} else if (curString == 1) {
@@ -221,16 +189,18 @@ public class Lobby {
 	private class LobbyMouseListener implements MouseListener {
 		@Override
 		public void mousePressed(MouseEvent e) {
-			// double x = e.getPoint().getX();
+			double x = e.getPoint().getX();
 			double y = e.getPoint().getY();
 
-			if (y >= ip.getY1() && y < ip.getY2()) {
+			if (ip.clicked(x, y)) {
 				curString = 0;
-			} else if (y >= port.getY1() && y < port.getY2()) {
+			} else if (port.clicked(x, y)) {
 				curString = 1;
-			} else if (y >= name.getY1() && y < name.getY2()) {
+			} else if (name.clicked(x, y)) {
 				curString = 2;
-			} // else if (x >= )
+			} else if (enter.clicked(x, y)) {
+				enterGame();
+			}
 
 			counter = 0;
 		}
@@ -247,18 +217,13 @@ public class Lobby {
 
 	private class LobbyPanel extends JPanel {
 		private Font fields;
+		private Font logo;
 		private int ipStringY;
 		private int portStringY;
 		private int nameStringY;
-		private Font logo;
-
 		private final int OFFSET;
 
 		LobbyPanel() {
-			//			int r = 255 - color.getRed();
-			//			int g = 255 - color.getGreen();
-			//			int b = 255 - color.getBlue();
-			//			alt = new Color(r, g, b);
 			OFFSET = 10;
 			logo = new Font("Helvetica", Font.BOLD | Font.ITALIC, SCREEN_WIDTH / 15);
 			fields = new Font("Lora", Font.PLAIN, SCREEN_WIDTH / 40);
@@ -268,19 +233,16 @@ public class Lobby {
 		}
 
 		public void paintComponent(Graphics g) {
-			// super.paintComponent(g);
+			display.update();
 
 			// draw the background rotating image
 			g.drawImage(image, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, null);
 
 			// draw the text fields' bounds
-			g.setColor(Color.RED);
+			g.setColor(Color.BLACK);
 			g.drawLine(ip.getX1(), ip.getY1(), ip.getX2(), ip.getY1());
-			g.setColor(Color.YELLOW);
 			g.drawLine(port.getX1(), port.getY1(), port.getX2(), port.getY1());
-			g.setColor(Color.BLUE);
 			g.drawLine(name.getX1(), name.getY1(), name.getX2(), name.getY1());
-			g.setColor(Color.GREEN);
 			g.drawLine(name.getX1(), name.getY2(), name.getX2(), name.getY2());
 
 			// draw current text field
@@ -297,20 +259,28 @@ public class Lobby {
 			}
 
 			// draw the enter button
-			g.fillOval(SCREEN_WIDTH / 2, (int)(SCREEN_HEIGHT / 1.5), SCREEN_WIDTH / 50, SCREEN_WIDTH / 50);
+			// g.fillOval(SCREEN_WIDTH / 2, (int)(SCREEN_HEIGHT / 1.5), SCREEN_WIDTH / 50, SCREEN_WIDTH / 50);
+			g.setColor(Color.WHITE);
+			g.fillRect(enter.getX1(), enter.getY1(), enter.getX2() - enter.getX1(),  enter.getY2() - enter.getY1());
+			g.setColor(Color.DARK_GRAY);
+			g.setFont(fields);
+			g.drawString(enter.getString(), enter.getX1(), enter.getY2() - OFFSET);
 
 			// draw the ip, port and name strings
-			g.setFont(fields);
 			g.setColor(Color.WHITE);
+			if (curString == 0) {
+				g.drawString(" ip address:", SCREEN_WIDTH / 10, ipStringY);
+			} else if (curString == 1) {
+				g.drawString("port number:", SCREEN_WIDTH / 10, portStringY);
+			} else if (curString == 2) {
+				g.drawString("   username:", SCREEN_WIDTH / 10, nameStringY);
+			}
 			g.drawString(ip.getString(), ip.getX1(), ipStringY);
 			g.drawString(port.getString(), port.getX1(), portStringY);
 			g.drawString(name.getString(), name.getX1(), nameStringY);
-			//			// centred
-			//			g.drawString(ip.getString(), SCREEN_WIDTH / 2 - ip.getString().length() * fields.getSize() / 4, ipStringY);
-			//			g.drawString(port.getString(), SCREEN_WIDTH / 2 - port.getString().length() * 15, portStringY);
-			//			g.drawString(name.getString(), SCREEN_WIDTH / 2 - name.getString().length() * 15, nameStringY);
 
 			// draw logo
+			g.setColor(Color.WHITE);
 			g.setFont(logo);
 			g.drawString("A SIMPLE BATTLEGROUND", SCREEN_WIDTH / 32, SCREEN_HEIGHT / 5);
 
@@ -323,7 +293,7 @@ public class Lobby {
 			//			} catch (InterruptedException e) {
 			//				e.printStackTrace();
 			//			}
-			//			repaint();
+			repaint();
 		}
 	}
 }

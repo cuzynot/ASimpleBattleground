@@ -17,7 +17,7 @@ public class Sniper extends Player {
 	private void init() {
 		this.maxHealth = 2100;
 		this.health = maxHealth;
-		this.speed = 0.11;
+		this.speed = 0.055;
 		this.damage = 1200;
 		this.fireRate = 1000;
 		this.maxAmmo = 5;

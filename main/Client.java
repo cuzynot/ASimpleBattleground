@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import javax.swing.JOptionPane;
 
 import player.Player;
-import player.builds.Soldier;
+import player.builds.*;
 
 public class Client {
 
@@ -33,8 +33,8 @@ public class Client {
 	private int mapSize;
 	private static int[][] map;
 
-	private String address;
-	private int port;
+	//	private String address;
+	//	private int port;
 	private String name;
 
 	/**
@@ -43,8 +43,8 @@ public class Client {
 	 */
 	public Client(String address, int port, String name) {
 		running = true;
-		this.address = address;
-		this.port = port;
+		//		this.address = address;
+		//		this.port = port;
 		this.name = name;
 
 		// get address and port and connect, then get username
@@ -82,9 +82,18 @@ public class Client {
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
+
+		int build = 2; // temp
 		
-		player = new Soldier(name); // temp
-		
+		if (build == 0) {
+			player = new Assassin(name);
+		} else if (build == 1) {
+			player = new Guard(name);
+		} else if (build == 2) {
+			player = new Sniper(name);
+		} else if (build == 3) {
+			player = new Soldier(name);
+		}
 
 		// start communication with server
 		go();
@@ -100,10 +109,6 @@ public class Client {
 	// getters
 	public Player getPlayer() {
 		return player;
-	}
-	
-	public PrintWriter getOutput() {
-		return output;
 	}
 
 	public String getName() {
@@ -122,8 +127,13 @@ public class Client {
 		return map;
 	}
 
-	public void update(Player player) {
+	public void update() {
 		output.println("xy " + player.getName() + " " + player.getX() + " " + player.getY());
+		output.flush();
+	}
+	
+	public void println(String msg) {
+		output.println(msg);
 		output.flush();
 	}
 
@@ -189,13 +199,14 @@ public class Client {
 									if (players.get(count).getName().equals(second)) {
 										players.remove(count);
 										found = true;
+										System.out.println("found and removed " + count);
 									}
 									count++;
 								}
 							} else if (command.equals("xy")) {
 								double x = Double.parseDouble(arr[2]);
 								double y = Double.parseDouble(arr[3]);
-								
+
 								// System.out.println("xy of " + second);
 
 								boolean found = false;

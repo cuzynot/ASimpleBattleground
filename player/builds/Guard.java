@@ -17,7 +17,7 @@ public class Guard extends Player {
 	private void init() {
 		this.maxHealth = 4700;
 		this.health = maxHealth;
-		this.speed = 0.10;
+		this.speed = 0.05;
 		this.damage = 225;
 		this.fireRate = 517;
 		this.maxAmmo = 5;

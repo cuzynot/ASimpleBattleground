@@ -25,6 +25,7 @@ public class Display extends JPanel {
 	private int colorRGB;
 	private int darkerColorRGB;
 	private Font font;
+	private Button quit;
 
 	private Player player;
 	private ArrayList<Player> players;
@@ -34,15 +35,14 @@ public class Display extends JPanel {
 	private int[] pixels;
 
 	// constructor
-	public Display(int[][] m, int w, int h, Color c, Player p, ArrayList<Player> ps) {
-		requestFocus(true);
-		map = m;
-		SCREEN_WIDTH = w;
-		SCREEN_HEIGHT = h;
-		player = p;
-		players = ps;
-		colorRGB = c.getRGB();
-		darkerColorRGB = c.darker().getRGB();
+	public Display(int[][] map, int SCREEN_WIDTH, int SCREEN_HEIGHT, Color color, Player player, ArrayList<Player> players) {
+		this.map = map;
+		this.SCREEN_WIDTH = SCREEN_WIDTH;
+		this.SCREEN_HEIGHT = SCREEN_HEIGHT;
+		this.player = player;
+		this.players = players;
+		this.colorRGB = color.getRGB();
+		this.darkerColorRGB = color.darker().getRGB();
 
 		CROSSHAIR_LENGTH = SCREEN_WIDTH / 100;
 		font = new Font("Lora", Font.PLAIN, SCREEN_WIDTH / 50);
@@ -56,36 +56,42 @@ public class Display extends JPanel {
 	}
 
 	public void paintComponent(Graphics g) {
-		// super.paintComponent(g);
+		if (player.inGame()) {
+			update();
 
-		// draw the background rotating image
-		// g.drawImage(image, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, null);
-
-		if (player.getClickedRight()) { // if the player is scoped in
-			int zoomW = (int)(image.getWidth() * player.getZoom());
-			int zoomH = (int)(image.getHeight() * player.getZoom());
-			BufferedImage sub = image.getSubimage(zoomW, zoomH, image.getWidth() - zoomW * 2, image.getHeight() - zoomH * 2);
-			g.drawImage(sub, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, null);
-		} else {
-			g.drawImage(image, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, null);
-		}
-
-		// draw crosshair
-		g.setColor(Color.WHITE);
-		g.drawLine(SCREEN_WIDTH / 2 - CROSSHAIR_LENGTH, SCREEN_HEIGHT / 2, SCREEN_WIDTH / 2 + CROSSHAIR_LENGTH, SCREEN_HEIGHT / 2);
-		g.drawLine(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 - CROSSHAIR_LENGTH, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 + CROSSHAIR_LENGTH);
-
-		// draw health
-		g.setColor(Color.GREEN);
-		g.fillRect(0, SCREEN_HEIGHT * 19 / 20, (int)(player.getHealth() * SCREEN_WIDTH / player.getMaxHealth()), SCREEN_HEIGHT / 20);
-
-		// draw players list
-		g.setFont(font);
-		g.setColor(Color.BLACK);
-		if (players != null) {
-			for (int i = 0; i < players.size(); i++) {
-				g.drawString(players.get(i).getName(), SCREEN_WIDTH * 9 / 10, SCREEN_HEIGHT / 20 * (i + 1));
+			// draw the background image
+			if (player.getClickedRight()) { // if the player is scoped in
+				int zoomW = (int)(image.getWidth() * player.getZoom());
+				int zoomH = (int)(image.getHeight() * player.getZoom());
+				BufferedImage sub = image.getSubimage(zoomW, zoomH, image.getWidth() - zoomW * 2, image.getHeight() - zoomH * 2);
+				g.drawImage(sub, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, null);
+			} else {
+				g.drawImage(image, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, null);
 			}
+
+			// draw crosshair
+			g.setColor(Color.WHITE);
+			g.drawLine(SCREEN_WIDTH / 2 - CROSSHAIR_LENGTH, SCREEN_HEIGHT / 2, SCREEN_WIDTH / 2 + CROSSHAIR_LENGTH, SCREEN_HEIGHT / 2);
+			g.drawLine(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 - CROSSHAIR_LENGTH, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 + CROSSHAIR_LENGTH);
+
+			// draw health
+			g.setColor(Color.GREEN);
+			g.fillRect(0, SCREEN_HEIGHT * 19 / 20, (int)(player.getHealth() * SCREEN_WIDTH / player.getMaxHealth()), SCREEN_HEIGHT / 20);
+
+			// draw players list
+			g.setFont(font);
+			g.setColor(Color.BLACK);
+			if (players != null) {
+				for (int i = 0; i < players.size(); i++) {
+					g.drawString(players.get(i).getName(), SCREEN_WIDTH * 9 / 10, SCREEN_HEIGHT / 20 * (i + 1));
+				}
+			}
+
+			repaint();
+		} else {
+			g.setColor(Color.GRAY);
+			g.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+			
 		}
 	}
 
