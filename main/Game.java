@@ -23,7 +23,7 @@ public class Game extends JFrame {
 	public static void main (String[] args){
 		Thread t = new Thread(new Runnable() {
 			public void run() {
-				new Game(new Client("localhost", 5000, "asdfwaadfad"));
+				new Game(new Client("localhost", 5000, "adfa"));
 			}
 		});
 		t.start();

@@ -69,9 +69,19 @@ public class Lobby {
 		curString = 0;
 		counter = 0;
 		color = new Color((int)(Math.random() * 255), (int)(Math.random() * 255), (int)(Math.random() * 255));
-		//alt = new Color(255 - color.getRed(), 255 - color.getGreen(), 255 - color.getBlue());
 		alt = new Color((int)(Math.random() * 255), (int)(Math.random() * 255), (int)(Math.random() * 255));
 
+		int[][] map = {
+				{1, 1, 1, 1, 1},
+				{1, 0, 0, 0, 1},
+				{1, 0, 0, 0, 1},
+				{1, 0, 0, 0, 1},
+				{1, 1, 1, 1, 1},
+		};
+		player = new Soldier("null", 2.5, 2.5, 1, 0, 0, -1);
+		display = new Display(map, SCREEN_WIDTH, SCREEN_HEIGHT, color, player, null);
+		image = display.getImage();
+		
 		// make new panel
 		panel = new LobbyPanel();
 
@@ -88,17 +98,6 @@ public class Lobby {
 		frame.setVisible(true);
 		frame.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
 		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-
-		int[][] map = {
-				{1, 1, 1, 1, 1},
-				{1, 0, 0, 0, 1},
-				{1, 0, 0, 0, 1},
-				{1, 0, 0, 0, 1},
-				{1, 1, 1, 1, 1},
-		};
-		player = new Soldier("null", 2.5, 2.5, 1, 0, 0, -1);
-		display = new Display(map, SCREEN_WIDTH, SCREEN_HEIGHT, color, player, null);
-		image = display.getImage();
 
 		while (true) {
 			updatePlayer();
@@ -270,18 +269,19 @@ public class Lobby {
 
 			// draw the enter button
 			// g.fillOval(SCREEN_WIDTH / 2, (int)(SCREEN_HEIGHT / 1.5), SCREEN_WIDTH / 50, SCREEN_WIDTH / 50);
-			g.setColor(Color.WHITE);
-			g.fillRect(enter.getX1(), enter.getY1(), enter.getX2() - enter.getX1(),  enter.getY2() - enter.getY1());
-			g.setColor(Color.DARK_GRAY);
+			g.setColor(alt);
 			g.setFont(fields);
 			g.drawString(enter.getString(), enter.getX1(), enter.getY2() - OFFSET);
 			
 			// draw the exit button
 			g.setColor(alt);
 			g.fillRect(exit.getX1(), exit.getY1(), exit.getX2() - exit.getX1(),  exit.getY2() - exit.getY1());
+			g.setColor(color);
+			g.drawLine(exit.getX1(), exit.getY1(), exit.getX2(),  exit.getY2());
+			g.drawLine(exit.getX2(), exit.getY1(), exit.getX1(),  exit.getY2());
 
 			// draw the ip, port and name strings
-			g.setColor(Color.WHITE);
+			g.setColor(alt);
 			if (curString == 0) {
 				g.drawString(" ip address:", SCREEN_WIDTH / 10, ipStringY);
 			} else if (curString == 1) {
@@ -289,7 +289,6 @@ public class Lobby {
 			} else if (curString == 2) {
 				g.drawString("   username:", SCREEN_WIDTH / 10, nameStringY);
 			}
-			g.setColor(alt);
 			g.drawString(ip.getString(), ip.getX1(), ipStringY);
 			g.drawString(port.getString(), port.getX1(), portStringY);
 			g.drawString(name.getString(), name.getX1(), nameStringY);

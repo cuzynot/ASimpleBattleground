@@ -45,6 +45,8 @@ public class Player implements Moveable{
 		this.inGame = true;
 		this.score = 0;
 		this.bullets = new SimpleLinkedList<Bullet>();
+		this.reloading = 0;
+		this.respawning = 0;
 
 		try {
 			robot = new Robot();
@@ -56,7 +58,10 @@ public class Player implements Moveable{
 	public Player(String name) {
 		this.name = name;
 		this.inGame = true;
+		this.score = 0;
 		this.bullets = new SimpleLinkedList<Bullet>();
+		this.reloading = 0;
+		this.respawning = 0;
 
 		try {
 			robot = new Robot();

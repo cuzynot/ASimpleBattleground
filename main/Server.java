@@ -280,16 +280,16 @@ public class Server {
 						if (msg.equals("exit")) { // if a user decides to exit
 							delete(client.getUsername()); // remove their reference
 
-						} else if (msg.startsWith("xy ")) {
+						} else if (msg.startsWith("hit ")) {
+							String[] arr = msg.split(" ");
+							printToOne(arr[1], msg);
+
+						} else {// if (msg.startsWith("xy ")) {
 							// truncate message
 							// msg = msg.substring(3);
 							// print message to everybody
 							printToAll(client.getUsername(), msg);
-						} else if (msg.startsWith("hit ")) {
-							String[] arr = msg.split(" ");
-							printToOne(arr[1], msg);
 						}
-
 					}
 				} catch (IOException e) { 
 					System.out.println("Failed to receive msg from the client, deleting " + client.getUsername());

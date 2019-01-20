@@ -4,11 +4,18 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 
+import javax.imageio.ImageIO;
 import javax.swing.JPanel;
 
 import player.Player;
+import player.builds.Assassin;
+import player.builds.Guard;
+import player.builds.Sniper;
+import player.builds.Soldier;
 
 public class Display extends JPanel {
 
@@ -31,6 +38,10 @@ public class Display extends JPanel {
 	private ArrayList<Player> players;
 
 	// images
+	private BufferedImage assassinWeapon;
+	private BufferedImage guardWeapon;
+	private BufferedImage sniperWeapon;
+	private BufferedImage soldierWeapon;
 	private BufferedImage image;
 	private int[] pixels;
 
@@ -48,8 +59,17 @@ public class Display extends JPanel {
 		font = new Font("Lora", Font.PLAIN, SCREEN_WIDTH / 50);
 		quit = new Button(SCREEN_WIDTH / 2 - SCREEN_HEIGHT / 16, SCREEN_HEIGHT / 2 - SCREEN_HEIGHT / 32, SCREEN_WIDTH / 2 + SCREEN_HEIGHT / 16, SCREEN_HEIGHT / 2 + SCREEN_HEIGHT / 32, "QUIT");
 
+		try {
+			assassinWeapon = ImageIO.read(new File("res/assassinWeapon.png"));
+			guardWeapon = ImageIO.read(new File("res/guardWeapon.png"));
+			sniperWeapon = ImageIO.read(new File("res/sniperWeapon.png"));
+			soldierWeapon = ImageIO.read(new File("res/soldierWeapon.png"));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		image = new BufferedImage(SCREEN_WIDTH, SCREEN_HEIGHT, BufferedImage.TYPE_INT_RGB);
 		pixels = ((DataBufferInt)image.getRaster().getDataBuffer()).getData(); // links pixels to image 
+		System.out.println("end of constructor");
 	}
 
 	public BufferedImage getImage() {
@@ -68,6 +88,16 @@ public class Display extends JPanel {
 				g.drawImage(sub, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, null);
 			} else {
 				g.drawImage(image, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, null);
+			}
+
+			if (player instanceof Assassin) {
+				g.drawImage(assassinWeapon, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, null);
+			} else if (player instanceof Guard) {
+				g.drawImage(guardWeapon, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, null);
+			} else if (player instanceof Sniper) {
+				g.drawImage(sniperWeapon, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, null);
+			} else if (player instanceof Soldier) {
+				g.drawImage(soldierWeapon, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, null);
 			}
 
 			// draw crosshair
@@ -90,7 +120,7 @@ public class Display extends JPanel {
 		} else {
 			g.setColor(Color.WHITE);
 			g.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-			
+
 			g.setColor(Color.DARK_GRAY);
 			g.setFont(font);
 			g.drawString(quit.getString(), quit.getX1(), quit.getY2());
@@ -172,6 +202,7 @@ public class Display extends JPanel {
 				if (players != null) {
 					for (int i = 0; i < players.size(); i++) {
 						Player p = players.get(i);
+						// check if player is respawning
 						if (p.getX() > mapX - PLAYER_WIDTH && p.getX() < mapX + PLAYER_WIDTH && p.getY() > mapY - PLAYER_WIDTH && p.getY() < mapY + PLAYER_WIDTH) {
 							if (dist(player, p) < closestDist) {
 								closestDist = dist(player, p);
@@ -232,7 +263,7 @@ public class Display extends JPanel {
 			}
 		}
 	}
-	
+
 	public Button getQuit() {
 		return quit;
 	}

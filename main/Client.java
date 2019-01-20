@@ -83,7 +83,7 @@ public class Client {
 			e1.printStackTrace();
 		}
 
-		int build = 2; // temp
+		int build = 1; // temp
 		
 		if (build == 0) {
 			player = new Assassin(name);
