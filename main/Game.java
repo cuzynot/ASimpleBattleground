@@ -23,7 +23,7 @@ public class Game extends JFrame {
 	public static void main (String[] args){
 		Thread t = new Thread(new Runnable() {
 			public void run() {
-				new Game(new Client("localhost", 5001, "asfdafa"));
+				new Game(new Client("localhost", 5000, "asdfwaadfad"));
 			}
 		});
 		t.start();
@@ -77,14 +77,14 @@ public class Game extends JFrame {
 		toggleCursor(false);
 
 		// init JFrame
+		// setUndecorated(true);
 		addKeyListener(new GameKeyListener());
 		addMouseListener(new GameMouseListener());
 		setResizable(false);
 		setTitle("A Simple Battleground");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		// setUndecorated(true);
-		setVisible(true);
 		setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
+		setVisible(true);
 
 		// make cursor blank
 		cursorShown = false;
@@ -315,11 +315,14 @@ public class Game extends JFrame {
 					player.setClickedRight(true);
 				}
 
-				//				double x = e.getPoint().getX();
-				//				double y = e.getPoint().getY();
-				//				if (quit.clicked(x, y)) {
-				//					curString = 2;
-				//				}
+				double x = e.getPoint().getX();
+				double y = e.getPoint().getY();
+				if (display.getQuit().clicked(x, y)) {
+					client.disconnect();
+					dispose();
+				}
+				System.out.println(x + " " + y);
+				System.out.println(display.getQuit().getX1() + " " + display.getQuit().getY1());
 			}
 		}
 

@@ -46,6 +46,7 @@ public class Display extends JPanel {
 
 		CROSSHAIR_LENGTH = SCREEN_WIDTH / 100;
 		font = new Font("Lora", Font.PLAIN, SCREEN_WIDTH / 50);
+		quit = new Button(SCREEN_WIDTH / 2 - SCREEN_HEIGHT / 16, SCREEN_HEIGHT / 2 - SCREEN_HEIGHT / 32, SCREEN_WIDTH / 2 + SCREEN_HEIGHT / 16, SCREEN_HEIGHT / 2 + SCREEN_HEIGHT / 32, "QUIT");
 
 		image = new BufferedImage(SCREEN_WIDTH, SCREEN_HEIGHT, BufferedImage.TYPE_INT_RGB);
 		pixels = ((DataBufferInt)image.getRaster().getDataBuffer()).getData(); // links pixels to image 
@@ -86,13 +87,15 @@ public class Display extends JPanel {
 					g.drawString(players.get(i).getName(), SCREEN_WIDTH * 9 / 10, SCREEN_HEIGHT / 20 * (i + 1));
 				}
 			}
-
-			repaint();
 		} else {
-			g.setColor(Color.GRAY);
+			g.setColor(Color.WHITE);
 			g.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 			
+			g.setColor(Color.DARK_GRAY);
+			g.setFont(font);
+			g.drawString(quit.getString(), quit.getX1(), quit.getY2());
 		}
+		repaint();
 	}
 
 	// recalculates how the screen should look to the user based on their position in the map
@@ -228,6 +231,10 @@ public class Display extends JPanel {
 				}
 			}
 		}
+	}
+	
+	public Button getQuit() {
+		return quit;
 	}
 
 	private double dist(Player a, Player b) {

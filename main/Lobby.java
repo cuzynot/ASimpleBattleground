@@ -29,7 +29,7 @@ public class Lobby {
 	//	private boolean side;
 
 	private Client client;
-	private Game game;
+	// private Game game;
 
 	private BufferedImage image;
 	private Player player;
@@ -41,9 +41,12 @@ public class Lobby {
 	private Field port;
 	private Field name;
 	private Button enter;
+	private Button exit;
+	
 	private int curString;
 	private int counter;
 	private Color color;
+	private Color alt;
 	private Display display;
 
 	private LobbyKeyListener lkl;
@@ -62,9 +65,12 @@ public class Lobby {
 		port = new Field(SCREEN_WIDTH / 3, SCREEN_HEIGHT / 2, SCREEN_WIDTH * 2 / 3, SCREEN_HEIGHT / 2 + SCREEN_HEIGHT / 16);
 		name = new Field(SCREEN_WIDTH / 3, SCREEN_HEIGHT / 2 + SCREEN_HEIGHT / 16, SCREEN_WIDTH * 2 / 3, SCREEN_HEIGHT / 2 + SCREEN_HEIGHT / 8);
 		enter = new Button(SCREEN_WIDTH / 2 - SCREEN_HEIGHT / 16, (int)(SCREEN_HEIGHT / 1.2) - SCREEN_HEIGHT / 32, SCREEN_WIDTH / 2 + SCREEN_HEIGHT / 16, (int)(SCREEN_HEIGHT / 1.2) + SCREEN_HEIGHT / 32, "ENTER");
+		exit = new Button(SCREEN_WIDTH - SCREEN_HEIGHT / 32, 0, SCREEN_WIDTH, SCREEN_HEIGHT / 32, "");
 		curString = 0;
 		counter = 0;
 		color = new Color((int)(Math.random() * 255), (int)(Math.random() * 255), (int)(Math.random() * 255));
+		//alt = new Color(255 - color.getRed(), 255 - color.getGreen(), 255 - color.getBlue());
+		alt = new Color((int)(Math.random() * 255), (int)(Math.random() * 255), (int)(Math.random() * 255));
 
 		// make new panel
 		panel = new LobbyPanel();
@@ -193,16 +199,20 @@ public class Lobby {
 			double y = e.getPoint().getY();
 
 			if (ip.clicked(x, y)) {
+				counter = 0;
 				curString = 0;
 			} else if (port.clicked(x, y)) {
+				counter = 0;
 				curString = 1;
 			} else if (name.clicked(x, y)) {
+				counter = 0;
 				curString = 2;
 			} else if (enter.clicked(x, y)) {
 				enterGame();
+			} else if (exit.clicked(x, y)) {
+				System.exit(0);
 			}
 
-			counter = 0;
 		}
 
 		@Override
@@ -239,7 +249,7 @@ public class Lobby {
 			g.drawImage(image, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, null);
 
 			// draw the text fields' bounds
-			g.setColor(Color.BLACK);
+			g.setColor(Color.WHITE);
 			g.drawLine(ip.getX1(), ip.getY1(), ip.getX2(), ip.getY1());
 			g.drawLine(port.getX1(), port.getY1(), port.getX2(), port.getY1());
 			g.drawLine(name.getX1(), name.getY1(), name.getX2(), name.getY1());
@@ -265,6 +275,10 @@ public class Lobby {
 			g.setColor(Color.DARK_GRAY);
 			g.setFont(fields);
 			g.drawString(enter.getString(), enter.getX1(), enter.getY2() - OFFSET);
+			
+			// draw the exit button
+			g.setColor(alt);
+			g.fillRect(exit.getX1(), exit.getY1(), exit.getX2() - exit.getX1(),  exit.getY2() - exit.getY1());
 
 			// draw the ip, port and name strings
 			g.setColor(Color.WHITE);
@@ -275,24 +289,21 @@ public class Lobby {
 			} else if (curString == 2) {
 				g.drawString("   username:", SCREEN_WIDTH / 10, nameStringY);
 			}
+			g.setColor(alt);
 			g.drawString(ip.getString(), ip.getX1(), ipStringY);
 			g.drawString(port.getString(), port.getX1(), portStringY);
 			g.drawString(name.getString(), name.getX1(), nameStringY);
 
 			// draw logo
-			g.setColor(Color.WHITE);
+			g.setColor(alt);
 			g.setFont(logo);
 			g.drawString("A SIMPLE BATTLEGROUND", SCREEN_WIDTH / 32, SCREEN_HEIGHT / 5);
 
+			// increment counter
 			if (counter < SCREEN_WIDTH / 2 - ip.getX1()) {
 				counter += 40;
 			}
 
-			//			try {
-			//				Thread.sleep(20);
-			//			} catch (InterruptedException e) {
-			//				e.printStackTrace();
-			//			}
 			repaint();
 		}
 	}
