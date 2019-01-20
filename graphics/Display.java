@@ -28,10 +28,11 @@ public class Display extends JPanel {
 	private static final int BLACK = Color.BLACK.getRGB();
 	private static final double PLAYER_WIDTH = 0.5;
 
-	// private Color color;
+	private Color color;
 	private int colorRGB;
 	private int darkerColorRGB;
 	private Font font;
+	private Font logo;
 	private Button quit;
 
 	private Player player;
@@ -42,6 +43,10 @@ public class Display extends JPanel {
 	private BufferedImage guardWeapon;
 	private BufferedImage sniperWeapon;
 	private BufferedImage soldierWeapon;
+	private BufferedImage assassinScope;
+	private BufferedImage guardScope;
+	private BufferedImage sniperScope;
+	private BufferedImage soldierScope;
 	private BufferedImage image;
 	private int[] pixels;
 
@@ -52,24 +57,29 @@ public class Display extends JPanel {
 		this.SCREEN_HEIGHT = SCREEN_HEIGHT;
 		this.player = player;
 		this.players = players;
+		this.color = color;
 		this.colorRGB = color.getRGB();
 		this.darkerColorRGB = color.darker().getRGB();
 
 		CROSSHAIR_LENGTH = SCREEN_WIDTH / 100;
 		font = new Font("Lora", Font.PLAIN, SCREEN_WIDTH / 50);
 		quit = new Button(SCREEN_WIDTH / 2 - SCREEN_HEIGHT / 16, SCREEN_HEIGHT / 2 - SCREEN_HEIGHT / 32, SCREEN_WIDTH / 2 + SCREEN_HEIGHT / 16, SCREEN_HEIGHT / 2 + SCREEN_HEIGHT / 32, "QUIT");
+		logo = new Font("Helvetica", Font.BOLD | Font.ITALIC, SCREEN_WIDTH / 15);
 
 		try {
 			assassinWeapon = ImageIO.read(new File("res/assassinWeapon.png"));
 			guardWeapon = ImageIO.read(new File("res/guardWeapon.png"));
 			sniperWeapon = ImageIO.read(new File("res/sniperWeapon.png"));
 			soldierWeapon = ImageIO.read(new File("res/soldierWeapon.png"));
+			assassinScope = ImageIO.read(new File("res/assassinScope.png"));
+			guardScope = ImageIO.read(new File("res/guardScope.png"));
+			sniperScope = ImageIO.read(new File("res/sniperScope.png"));
+			soldierScope = ImageIO.read(new File("res/soldierScope.png"));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		image = new BufferedImage(SCREEN_WIDTH, SCREEN_HEIGHT, BufferedImage.TYPE_INT_RGB);
 		pixels = ((DataBufferInt)image.getRaster().getDataBuffer()).getData(); // links pixels to image 
-		System.out.println("end of constructor");
 	}
 
 	public BufferedImage getImage() {
@@ -90,24 +100,50 @@ public class Display extends JPanel {
 				g.drawImage(image, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, null);
 			}
 
-			if (player instanceof Assassin) {
-				g.drawImage(assassinWeapon, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, null);
-			} else if (player instanceof Guard) {
-				g.drawImage(guardWeapon, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, null);
-			} else if (player instanceof Sniper) {
-				g.drawImage(sniperWeapon, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, null);
-			} else if (player instanceof Soldier) {
-				g.drawImage(soldierWeapon, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, null);
+			// draw weapon
+			if (player.getClickedRight()) {
+				if (player instanceof Assassin) {
+					g.drawImage(assassinScope, SCREEN_WIDTH / 2 - SCREEN_WIDTH / 8, SCREEN_HEIGHT / 2, SCREEN_WIDTH / 4, SCREEN_HEIGHT / 2, null);
+				} else if (player instanceof Guard) {
+					g.drawImage(guardScope, SCREEN_WIDTH / 2 - SCREEN_WIDTH / 8, SCREEN_HEIGHT / 2, SCREEN_WIDTH / 4, SCREEN_HEIGHT / 2, null);
+				} else if (player instanceof Sniper) {
+					g.drawImage(sniperScope, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, null);
+				} else if (player instanceof Soldier) {
+					g.drawImage(soldierScope, SCREEN_WIDTH / 2 - SCREEN_WIDTH / 8, SCREEN_HEIGHT / 2, SCREEN_WIDTH / 4, SCREEN_HEIGHT / 2, null);
+				}
+			} else {
+				if (player instanceof Assassin) {
+					g.drawImage(assassinWeapon, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, null);
+				} else if (player instanceof Guard) {
+					g.drawImage(guardWeapon, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, null);
+				} else if (player instanceof Sniper) {
+					g.drawImage(sniperWeapon, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, null);
+				} else if (player instanceof Soldier) {
+					g.drawImage(soldierWeapon, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, null);
+				}
 			}
 
-			// draw crosshair
-			g.setColor(Color.WHITE);
-			g.drawLine(SCREEN_WIDTH / 2 - CROSSHAIR_LENGTH, SCREEN_HEIGHT / 2, SCREEN_WIDTH / 2 + CROSSHAIR_LENGTH, SCREEN_HEIGHT / 2);
-			g.drawLine(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 - CROSSHAIR_LENGTH, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 + CROSSHAIR_LENGTH);
+			// CHANGE IMAGE FOR SCOPING
 
 			// draw health
 			g.setColor(Color.GREEN);
 			g.fillRect(0, SCREEN_HEIGHT * 19 / 20, (int)(player.getHealth() * SCREEN_WIDTH / player.getMaxHealth()), SCREEN_HEIGHT / 20);
+
+			g.setColor(Color.WHITE);
+			if (player.getReloading() > 0) {
+				// draw reloading arc
+				g.fillArc(SCREEN_WIDTH / 2 - CROSSHAIR_LENGTH, SCREEN_HEIGHT / 2 - CROSSHAIR_LENGTH, CROSSHAIR_LENGTH * 2, CROSSHAIR_LENGTH * 2, 90, 360 * player.getReloading() / 1000);
+			} else {
+				// draw crosshair
+				g.setColor(Color.WHITE);
+				g.drawLine(SCREEN_WIDTH / 2 - CROSSHAIR_LENGTH, SCREEN_HEIGHT / 2, SCREEN_WIDTH / 2 + CROSSHAIR_LENGTH, SCREEN_HEIGHT / 2);
+				g.drawLine(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 - CROSSHAIR_LENGTH, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 + CROSSHAIR_LENGTH);
+			}
+
+			// draw ammo count
+			g.setFont(font);
+			g.setColor(Color.WHITE);
+			g.drawString(player.getAmmo() + "/" + player.getMaxAmmo(), SCREEN_WIDTH - SCREEN_WIDTH / 20, SCREEN_HEIGHT - SCREEN_WIDTH / 20);
 
 			// draw players list
 			g.setFont(font);
@@ -121,6 +157,12 @@ public class Display extends JPanel {
 			g.setColor(Color.WHITE);
 			g.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
+			// draw logo
+			g.setColor(color);
+			g.setFont(logo);
+			g.drawString("A SIMPLE BATTLEGROUND", SCREEN_WIDTH / 32, SCREEN_HEIGHT / 5);
+
+			// draw exit button
 			g.setColor(Color.DARK_GRAY);
 			g.setFont(font);
 			g.drawString(quit.getString(), quit.getX1(), quit.getY2());

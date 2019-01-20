@@ -23,6 +23,6 @@ public class Assassin extends Player {
 		this.fireRate = 360;
 		this.maxAmmo = 6;
 		this.ammo = maxAmmo;
-		this.zoom = 0.00001;
+		this.zoom = 0.1;
 	}
 }

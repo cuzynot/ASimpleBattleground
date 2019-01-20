@@ -237,6 +237,9 @@ public class Game extends JFrame {
 			player.setYPlane(yPlane);
 			if (player.getReloading() > 0) {
 				player.setReloading(player.getReloading() - DELAY);
+				if (player.getReloading() <= 0) {
+					player.setAmmo(player.getMaxAmmo());
+				}
 			}
 
 			mouseMoved();

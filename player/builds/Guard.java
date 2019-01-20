@@ -22,6 +22,6 @@ public class Guard extends Player {
 		this.fireRate = 517;
 		this.maxAmmo = 5;
 		this.ammo = maxAmmo;
-		this.zoom = 0.00001;
+		this.zoom = 0.1;
 	}
 }

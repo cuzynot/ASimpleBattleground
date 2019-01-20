@@ -22,6 +22,6 @@ public class Soldier extends Player {
 		this.fireRate = 100;
 		this.maxAmmo = 30;
 		this.ammo = maxAmmo;
-		this.zoom = 0.1;
+		this.zoom = 0.15;
 	}
 }

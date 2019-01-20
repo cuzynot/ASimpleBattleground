@@ -168,7 +168,7 @@ public class Player implements Moveable{
 	}
 	
 	public double getFireRate() {
-		return health;
+		return fireRate;
 	}
 	
 	public double getZoom() {
