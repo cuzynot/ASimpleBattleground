@@ -77,14 +77,6 @@ public class Game extends JFrame {
 		toggleCursor(false);
 
 		// init JFrame
-		// setUndecorated(true);
-		addKeyListener(new GameKeyListener());
-		addMouseListener(new GameMouseListener());
-		setResizable(false);
-		setTitle("A Simple Battleground");
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
-		setVisible(true);
 
 		// make cursor blank
 		cursorShown = false;
@@ -93,6 +85,18 @@ public class Game extends JFrame {
 		player = client.getPlayer();
 		players = client.getPlayers();
 		map = client.getMap();
+		
+		// init Screen
+		display = new Display(map, SCREEN_WIDTH, SCREEN_HEIGHT, color, player, players); // screen = new Screen(map, mapWidth, mapHeight, textures, 640, 480)
+		add(display);
+		addKeyListener(new GameKeyListener());
+		addMouseListener(new GameMouseListener());
+		setResizable(false);
+		setUndecorated(true);
+		setTitle("A Simple Battleground");
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
+		setVisible(true);
 
 		// spawn the player
 		spawnPlayer();
@@ -125,13 +129,6 @@ public class Game extends JFrame {
 		player.setAmmo(player.getMaxAmmo());
 		player.setReloading(0);
 		// player = new Player(client.getName(), x, y, 1, 0, 0, -1, "sniper"); // temp
-
-		// init Screen
-		display = new Display(map, SCREEN_WIDTH, SCREEN_HEIGHT, color, player, players); // screen = new Screen(map, mapWidth, mapHeight, textures, 640, 480)
-		add(display);
-
-		// enter game loop
-		loop();
 	}
 
 	// private methods
@@ -314,15 +311,13 @@ public class Game extends JFrame {
 				} else if (button == MouseEvent.BUTTON3) {
 					player.setClickedRight(true);
 				}
-
+			} else {
 				double x = e.getPoint().getX();
 				double y = e.getPoint().getY();
 				if (display.getQuit().clicked(x, y)) {
 					client.disconnect();
 					dispose();
 				}
-				System.out.println(x + " " + y);
-				System.out.println(display.getQuit().getX1() + " " + display.getQuit().getY1());
 			}
 		}
 
