@@ -69,7 +69,7 @@ public class Server {
 	private void go(int port) {
 		randomizeMap();
 
-		System.out.println("Waiting for a client connection..");
+//		System.out.println("Waiting for a client connection..");
 
 		Socket client = null; //hold the client connection
 
@@ -79,7 +79,7 @@ public class Server {
 
 			while(running) {  // this loops to accept multiple clients
 				client = serverSocket.accept();  // wait for connection
-				System.out.println("Client connected");
+//				System.out.println("Client connected");
 				ClientObject c = new ClientObject(client);
 
 				// if there is no duplicate name
@@ -90,13 +90,13 @@ public class Server {
 				}
 			}
 		} catch (Exception e) { 
-			System.out.println("Error accepting connection");
+//			System.out.println("Error accepting connection");
 			//close all and quit
 			try {
 				client.close();
 				serverSocket.close();
 			} catch (Exception e1) { 
-				System.out.println("Failed to close socket");
+//				System.out.println("Failed to close socket");
 			}
 			System.exit(-1);
 		}
@@ -296,7 +296,7 @@ public class Server {
 						}
 					}
 				} catch (IOException e) { 
-					System.out.println("Failed to receive msg from the client, deleting " + client.getUsername());
+//					System.out.println("Failed to receive msg from the client, deleting " + client.getUsername());
 
 					// disconnect from server
 					delete(client.getUsername());
@@ -309,7 +309,7 @@ public class Server {
 				client.getOutput().close();
 				client.getSocket().close();
 			} catch (Exception e) { 
-				System.out.println("Failed to close socket");
+//				System.out.println("Failed to close socket");
 			}
 
 		} // end of run()
@@ -330,9 +330,8 @@ public class Server {
 		ClientObject(Socket socket){
 			this.client = socket;
 			try { // assign all connections to client
-				this.output = new PrintWriter(client.getOutputStream());
-				InputStreamReader stream = new InputStreamReader(client.getInputStream());
-				this.input = new BufferedReader(stream);
+				output = new PrintWriter(client.getOutputStream());
+				input = new BufferedReader(new InputStreamReader(client.getInputStream()));
 				username = input.readLine();
 
 				String[] usernames = new String[clients.size()];
@@ -342,7 +341,15 @@ public class Server {
 
 					// if there is a person with the same user name
 					if (username.equals(cur.getUsername())) {
-						// send duplicate to client so they can enter a new name
+						// send "duplicate" to client so they can enter a new name
+						System.out.println("printed duplicate");
+						
+						try {
+							Thread.sleep(10000);
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}
+						
 						output.println("duplicate");
 						output.flush();
 

@@ -21,12 +21,12 @@ public class Game extends JFrame {
 
 	// run
 	public static void main (String[] args) {
-		Thread t = new Thread(new Runnable() {
-			public void run() {
-				new Game(new Client("localhost", 5000, "adfa", 0));
-			}
-		});
-		t.start();
+//		Thread t = new Thread(new Runnable() {
+//			public void run() {
+//				new Game(new Client("localhost", 5000, "adfa", 0));
+//			}
+//		});
+//		t.start();
 	}
 
 	// Camera
@@ -366,7 +366,8 @@ public class Game extends JFrame {
 			} else if (key == KeyEvent.VK_D) {
 				player.setRight(true);
 			} else if (key == KeyEvent.VK_R) {
-				spawnPlayer();
+				player.setReload(1000);
+				// spawnPlayer();
 			} else if (key == KeyEvent.VK_ESCAPE) {
 				player.setRotation(0);
 				player.setInGame(!player.inGame());

@@ -16,6 +16,7 @@ import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
+import exceptions.DuplicateException;
 import graphics.Button;
 import graphics.Display;
 import graphics.Field;
@@ -56,6 +57,8 @@ public class Lobby {
 	private int curBuild;
 	private int curString;
 	private int counter;
+	private String errorMsg;
+
 	private Color color;
 	private Color alt;
 	private Display display;
@@ -84,6 +87,7 @@ public class Lobby {
 		counter = 0;
 		color = new Color((int)(Math.random() * 255), (int)(Math.random() * 255), (int)(Math.random() * 255));
 		alt = new Color((int)(Math.random() * 255), (int)(Math.random() * 255), (int)(Math.random() * 255));
+		errorMsg = "";
 
 		try {
 			assassinIcon = ImageIO.read(new File("res/assassinIcon.png"));
@@ -155,16 +159,35 @@ public class Lobby {
 	}
 
 	private void enterGame() {
-		System.out.println("connecting to " + ip.getString() + " " + port.getString() + " " + name.getString());
-		client = new Client(ip.getString(), Integer.parseInt(port.getString()), name.getString(), curBuild);
-		//				client = new Client("localhost", 5001, "asdfoaj");
-		frame.dispose();
-		Thread t = new Thread(new Runnable() {
-			public void run() {
-				new Game(client);
-			}
-		});
-		t.start();
+		// System.out.println("connecting to " + ip.getString() + " " + port.getString() + " " + name.getString());
+		try {
+			client = new Client(ip.getString(), Integer.parseInt(port.getString()), name.getString(), curBuild);
+			frame.dispose();
+			new Game(client);
+			//			Thread t = new Thread(new Runnable() {
+			//				public void run() {
+			//					new Game(client);
+			//				}
+			//			});
+			//			t.start();
+		} catch (NumberFormatException e) {
+			errorMsg = "PORT MUST BE A NUMBER";
+		} catch (DuplicateException e) {
+			errorMsg = "    DUPLICATE NAME   ";
+			//		} catch (IOException e) {
+			//			errorMsg = " INCORRECT IP ADDRESS";
+		} catch (Exception e) {
+			errorMsg = "  CONNECTION REFUSED ";
+		}
+		//		if (errorMsg.equals("")) {
+		//			frame.dispose();
+		//			Thread t = new Thread(new Runnable() {
+		//				public void run() {
+		//					new Game(client);
+		//				}
+		//			});
+		//			t.start();
+		//		}
 	}
 
 	private class LobbyKeyListener implements KeyListener {
@@ -277,10 +300,10 @@ public class Lobby {
 		public void paintComponent(Graphics g) {
 			display.update();
 
-			// draw the background rotating image
+			// draw background rotating image
 			g.drawImage(image, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, null);
 
-			// draw the text fields' bounds
+			// draw text fields' bounds
 			g.setColor(Color.WHITE);
 			g.drawLine(ip.getX1(), ip.getY1(), ip.getX2(), ip.getY1());
 			g.drawLine(port.getX1(), port.getY1(), port.getX2(), port.getY1());
@@ -300,20 +323,20 @@ public class Lobby {
 				g.fillRect(SCREEN_WIDTH / 2 - counter, name.getY2() - OFFSET, counter * 2, OFFSET * 2);
 			}
 
-			// draw the enter button
+			// draw enter button
 			// g.fillOval(SCREEN_WIDTH / 2, (int)(SCREEN_HEIGHT / 1.5), SCREEN_WIDTH / 50, SCREEN_WIDTH / 50);
 			g.setColor(alt);
 			g.setFont(fields);
 			g.drawString(enter.getString(), enter.getX1(), enter.getY2() - OFFSET);
 
-			// draw the exit button
+			// draw exit button
 			g.setColor(alt);
 			g.fillRect(exit.getX1(), exit.getY1(), exit.getX2() - exit.getX1(), exit.getY2() - exit.getY1());
 			g.setColor(color);
 			g.drawLine(exit.getX1(), exit.getY1(), exit.getX2(), exit.getY2());
 			g.drawLine(exit.getX2(), exit.getY1(), exit.getX1(), exit.getY2());
 
-			// draw the ip, port and name strings
+			// draw ip, port and name strings
 			g.setColor(alt);
 			if (curString == 0) {
 				g.drawString(" ip address:", SCREEN_WIDTH / 10, ipStringY);
@@ -326,12 +349,13 @@ public class Lobby {
 			g.drawString(port.getString(), port.getX1(), portStringY);
 			g.drawString(name.getString(), name.getX1(), nameStringY);
 
-			// draw the builds
+			// draw builds
 			g.setColor(Color.WHITE);
 			g.setFont(fields);
 			g.drawString(prevBuild.getString(), prevBuild.getX1(), prevBuild.getY2() - OFFSET);
 			g.drawString(nextBuild.getString(), nextBuild.getX1(), nextBuild.getY2() - OFFSET);
 
+			// draw build icons
 			g.setColor(alt);
 			if (curBuild == 0) {
 				g.drawImage(assassinIcon, SCREEN_WIDTH * 39 / 50, SCREEN_HEIGHT * 3 / 7, SCREEN_WIDTH / 10, SCREEN_WIDTH / 10, null);
@@ -347,8 +371,9 @@ public class Lobby {
 				g.drawString(" Soldier", SCREEN_WIDTH * 39 / 50, SCREEN_HEIGHT * 6 / 9);
 			}
 
-			//			g.drawRect(prevBuild.getX1(), prevBuild.getY1(), prevBuild.getX2() - prevBuild.getX1(), prevBuild.getY2() - prevBuild.getY1());
-			//			g.drawRect(nextBuild.getX1(), nextBuild.getY1(), nextBuild.getX2() - nextBuild.getX1(), nextBuild.getY2() - nextBuild.getY1());
+			// draw error msg
+			g.setColor(Color.RED);
+			g.drawString(errorMsg, SCREEN_WIDTH / 3, SCREEN_HEIGHT * 19 / 20);
 
 			// draw logo
 			g.setColor(alt);

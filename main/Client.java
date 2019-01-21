@@ -11,11 +11,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.util.ArrayList;
-
-import javax.swing.JOptionPane;
 
 import data_structures.SimpleLinkedList;
+import exceptions.DuplicateException;
 import player.Player;
 import player.builds.Assassin;
 import player.builds.Guard;
@@ -44,8 +42,9 @@ public class Client {
 	/**
 	 * ChatClient 
 	 * constructor
+	 * @throws IOException 
 	 */
-	public Client(String address, int port, String name, int build) {
+	public Client(String address, int port, String name, int build) throws DuplicateException, IOException {
 		running = true;
 		//		this.address = address;
 		//		this.port = port;
@@ -64,29 +63,31 @@ public class Client {
 		output.flush();
 
 		// check duplicate username
-		try {
-			if (input.ready()) {
-				String msg = input.readLine();
-				System.out.println("first msg " + msg);
-
-				while (msg.equals("duplicate")) { //Loop until name is not duplicate
-					JOptionPane.showMessageDialog(null, "Username already exists");
-
-					connect(address, port);
-
-					name = JOptionPane.showInputDialog("Enter username:").replace(" ", "");
-
-					output.println(name);
-					output.flush();
-
-					msg = input.readLine();
-				}
-
+		//		try {
+		if (input.ready()) {
+			String msg = input.readLine();
+			System.out.println("first msg " + msg);
+			
+			try {
+				Thread.sleep(10000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
 			}
-		} catch (IOException e1) {
-			e1.printStackTrace();
-		}
+
+			if (msg.equals("duplicate")) {
+				// System.out.println("got duplicate");
+				throw new DuplicateException();
+			}
+		} 
+//		else {
+//			throw new IOException();
+//		}
 		
+		//		} catch (IOException e) {
+		//			e.printStackTrace();
+		//		}
+
+		// System.out.println("reach builds");
 		if (build == 0) {
 			player = new Assassin(name);
 		} else if (build == 1) {
@@ -133,7 +134,7 @@ public class Client {
 		output.println("xy " + player.getName() + " " + player.getX() + " " + player.getY());
 		output.flush();
 	}
-	
+
 	public void println(String msg) {
 		output.println(msg);
 		output.flush();
@@ -167,8 +168,6 @@ public class Client {
 
 			public void run(){
 				try {
-					//input.readLine();
-
 					while (running) {
 						if (input.ready()) { // check for an incoming messge
 							msg = input.readLine(); // read the message
@@ -201,7 +200,7 @@ public class Client {
 									if (players.get(count).getName().equals(second)) {
 										players.remove(count);
 										found = true;
-										System.out.println("found and removed " + count);
+										// System.out.println("found and removed " + count);
 									}
 									count++;
 								}
@@ -226,7 +225,7 @@ public class Client {
 								}
 							} else if (command.equals("hit")) {
 								double damage = Double.parseDouble(arr[2]);
-								System.out.println("took " + damage + "dmg");
+								// System.out.println("took " + damage + "dmg");
 								player.setHealth(player.getHealth() - damage);
 							}
 						}
