@@ -4,9 +4,12 @@ package main;
  * @author Yili
  */
 
-// imports for network communication
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Panel;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -20,6 +23,7 @@ import javax.swing.JTextField;
 
 import data_structures.SimpleLinkedList;
 import data_structures.SimpleQueue;
+import graphics.Field;
 
 public class Server {
 
@@ -27,10 +31,10 @@ public class Server {
 	private static Boolean running;  // controls if the server is accepting clients
 
 	private SimpleLinkedList<ClientObject> clients; // list of clients
-	private JTextField t; // textfield for the port number
 
 	private int mapSize;
 	private static int[][] map;
+	private Field port;
 
 	/** Main
 	 * @param args parameters from command line
@@ -43,22 +47,22 @@ public class Server {
 	 * Makes a new frame for user to enter what port they wish their server to be on
 	 */
 	public Server() {
+		final int WIDTH = 750;
+		final int HEIGHT = 300;
+
 		running = true;
 		clients = new SimpleLinkedList<ClientObject>(); // list of clients
 		mapSize = 10;
-		
-		// make new jcomponents for the user to choose server port number
-		JFrame f = new JFrame();
-		JPanel p = new JPanel();
-		t = new JTextField(4);
-		t.addActionListener(new SendActionListener());
+		port = new Field(400, 100, 650, 200, 4);
 
-		// add textfield to panel, and panel to frame
-		p.add(t);
-		f.add(p);
+		// make new jcomponents for the user to choose server port number
+		JFrame f = new JFrame("Server");
+		ServerPanel p = new ServerPanel(WIDTH, HEIGHT);
 
 		// config frame
-		f.setSize(300, 300);
+		f.add(p);
+		f.addKeyListener(new ServerKeyListener());
+		f.setSize(WIDTH, HEIGHT);
 		f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		f.setVisible(true);
 	}
@@ -69,17 +73,17 @@ public class Server {
 	private void go(int port) {
 		randomizeMap();
 
-//		System.out.println("Waiting for a client connection..");
-
 		Socket client = null; //hold the client connection
+		
+		System.out.println("waiting for clients");
 
 		try {
 			serverSocket = new ServerSocket(port);  //assigns an port to the server
 			serverSocket.setSoTimeout(120000);  // 2 min timeout
 
-			while(running) {  // this loops to accept multiple clients
+			while (running) {  // this loops to accept multiple clients
 				client = serverSocket.accept();  // wait for connection
-//				System.out.println("Client connected");
+				System.out.println("Client connected");
 				ClientObject c = new ClientObject(client);
 
 				// if there is no duplicate name
@@ -90,13 +94,13 @@ public class Server {
 				}
 			}
 		} catch (Exception e) { 
-//			System.out.println("Error accepting connection");
+			System.out.println("Error accepting connection");
 			//close all and quit
 			try {
 				client.close();
 				serverSocket.close();
 			} catch (Exception e1) { 
-//				System.out.println("Failed to close socket");
+				System.out.println("Failed to close socket");
 			}
 			System.exit(-1);
 		}
@@ -243,19 +247,6 @@ public class Server {
 		}
 	}
 
-	//***** Inner class - ActionListener to get port number
-	private class SendActionListener implements ActionListener {
-
-		@Override
-		public void actionPerformed(ActionEvent e) {
-			// get the desired port number
-			int port = Integer.parseInt(t.getText());			
-			// start the server on port
-			go(port);
-		}
-
-	}
-
 	//***** Inner class - thread for client connection
 	private class ConnectionHandler implements Runnable { 
 		private ClientObject client;
@@ -296,7 +287,7 @@ public class Server {
 						}
 					}
 				} catch (IOException e) { 
-//					System.out.println("Failed to receive msg from the client, deleting " + client.getUsername());
+					System.out.println("Failed to receive msg from the client, deleting " + client.getUsername());
 
 					// disconnect from server
 					delete(client.getUsername());
@@ -309,10 +300,85 @@ public class Server {
 				client.getOutput().close();
 				client.getSocket().close();
 			} catch (Exception e) { 
-//				System.out.println("Failed to close socket");
+				System.out.println("Failed to close socket");
 			}
 
 		} // end of run()
+	} //end of inner class
+
+	//***** Inner class - Stores client information
+	private class ServerKeyListener implements KeyListener {
+
+		@Override
+		public void keyPressed(KeyEvent e) {
+			int key = e.getKeyCode();
+
+			String s = port.getString();
+			if (key == KeyEvent.VK_BACK_SPACE) {
+				if (s.length() > 0) {
+					port.setString(s.substring(0, s.length() - 1));
+				}
+			} else if (key == KeyEvent.VK_ENTER) {
+				// get the desired port number
+				int port = Integer.parseInt(s);
+				// start the server on port
+				go(port);
+			} else if (key != KeyEvent.VK_SPACE) {
+				// } else if ((key != KeyEvent.VK_SHIFT) && (key != KeyEvent.VK_CONTROL) && (key != KeyEvent.VK_ALT)) {
+				char c = e.getKeyChar();
+				if (s.length() < port.getMaxLength()) {
+					port.setString((s + c).toLowerCase());
+				}
+			}
+		}
+
+		@Override
+		public void keyReleased(KeyEvent e) {
+		}
+
+		@Override
+		public void keyTyped(KeyEvent e) {
+		}
+
+	} //end of inner class
+
+	//***** Inner class - Stores client information
+	private class ServerPanel extends JPanel {
+		private final int WIDTH;
+		private final int HEIGHT;
+		private Color color;
+		private Color alt;
+		private Font font;
+
+		ServerPanel(int WIDTH, int HEIGHT) {
+			this.WIDTH = WIDTH;
+			this.HEIGHT = HEIGHT;
+			color = new Color((int)(Math.random() * 255), (int)(Math.random() * 255), (int)(Math.random() * 255));
+			alt = new Color((int)(Math.random() * 255), (int)(Math.random() * 255), (int)(Math.random() * 255));
+			font = new Font("Lora", Font.PLAIN, 100);
+		}
+
+		@Override
+		public void paintComponent(Graphics g) {
+			// draw background
+			g.setColor(color);
+			g.fillRect(0, 0, WIDTH, HEIGHT);
+
+			// draw text field
+			g.setColor(Color.WHITE);
+			g.fillRect(port.getX1(), port.getY1(), port.getX2() - port.getX1(), port.getY2() - port.getY1());
+
+			// draw strings
+			g.setColor(alt);
+			g.setFont(font);
+			g.drawString("PORT:", 0, port.getY2());
+			
+			g.setColor(Color.BLACK);
+			g.setFont(font);
+			g.drawString(port.getString(), port.getX1(), port.getY2());
+
+			repaint();
+		}
 	} //end of inner class
 
 	//***** Inner class - Stores client information
@@ -327,7 +393,7 @@ public class Server {
 		 * Constructor
 		 * @param Socket socket, used to establish connection to its client
 		 */
-		ClientObject(Socket socket){
+		ClientObject(Socket socket) {
 			this.client = socket;
 			try { // assign all connections to client
 				output = new PrintWriter(client.getOutputStream());
@@ -343,7 +409,7 @@ public class Server {
 					if (username.equals(cur.getUsername())) {
 						// send "duplicate" to client so they can enter a new name
 						System.out.println("printed duplicate");
-						
+
 						output.println("duplicate");
 						output.flush();
 
