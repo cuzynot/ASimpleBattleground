@@ -344,12 +344,6 @@ public class Server {
 						// send "duplicate" to client so they can enter a new name
 						System.out.println("printed duplicate");
 						
-						try {
-							Thread.sleep(10000);
-						} catch (InterruptedException e) {
-							e.printStackTrace();
-						}
-						
 						output.println("duplicate");
 						output.flush();
 

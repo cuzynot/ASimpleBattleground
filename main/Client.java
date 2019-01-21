@@ -63,29 +63,12 @@ public class Client {
 		output.flush();
 
 		// check duplicate username
-		//		try {
-		if (input.ready()) {
-			String msg = input.readLine();
-			System.out.println("first msg " + msg);
-			
-			try {
-				Thread.sleep(10000);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
+		String msg = input.readLine();
+		System.out.println("first msg " + msg);
 
-			if (msg.equals("duplicate")) {
-				// System.out.println("got duplicate");
-				throw new DuplicateException();
-			}
-		} 
-//		else {
-//			throw new IOException();
-//		}
-		
-		//		} catch (IOException e) {
-		//			e.printStackTrace();
-		//		}
+		if (msg.equals("duplicate")) {
+			throw new DuplicateException();
+		}
 
 		// System.out.println("reach builds");
 		if (build == 0) {
