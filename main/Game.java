@@ -20,7 +20,7 @@ import player.Player;
 public class Game extends JFrame {
 
 	// run
-	public static void main (String[] args){
+	public static void main (String[] args) {
 		Thread t = new Thread(new Runnable() {
 			public void run() {
 				new Game(new Client("localhost", 5000, "adfa"));
@@ -127,7 +127,7 @@ public class Game extends JFrame {
 		player.setYPlane(-1);
 		player.setHealth(player.getMaxHealth());
 		player.setAmmo(player.getMaxAmmo());
-		player.setReloading(0);
+		player.setReload(0);
 		// player = new Player(client.getName(), x, y, 1, 0, 0, -1, "sniper"); // temp
 	}
 
@@ -146,8 +146,7 @@ public class Game extends JFrame {
 
 	// game loop
 	private void loop() {
-		while(true) {
-
+		while (true) {
 			if (player.inGame()) {
 				updatePlayer();
 				client.update();
@@ -164,10 +163,15 @@ public class Game extends JFrame {
 	// update camera view
 	private void updatePlayer() {
 		if (player.getHealth() <= 0) {
-			player.setRespawning(3000);
+			player.setRespawn(3000);
+			player.setX(-1);
+			player.setY(-1);
 			player.setHealth(player.getMaxHealth());
-		} else if (player.getRespawning() > 0) {
-			player.setRespawning(player.getRespawning() - DELAY);
+		} else if (player.getRespawn() > 0) {
+			player.setRespawn(player.getRespawn() - DELAY);
+			if (player.getRespawn() <= 0) {
+				spawnPlayer();
+			}
 		} else {
 			// get player variables
 			boolean forward = player.getForward();
@@ -185,7 +189,7 @@ public class Game extends JFrame {
 			double yPlane = player.getYPlane();
 
 			// move player
-			if (forward){
+			if (forward) {
 				if (map[(int)(x + xDir * speed)][(int)y] == 0) {
 					x += xDir * speed;
 				}
@@ -193,7 +197,7 @@ public class Game extends JFrame {
 					y += yDir * speed;
 				}
 			}
-			if (back){
+			if (back) {
 				if (map[(int)(x - xDir * speed)][(int)y] == 0) {
 					x -= xDir * speed;
 				}
@@ -203,7 +207,7 @@ public class Game extends JFrame {
 			}
 
 			// reduced speed on strafing
-			if (left){
+			if (left) {
 				if (map[(int)(x - xPlane * speed)][(int)y] == 0) {
 					x -= xPlane * speed;
 				}
@@ -211,7 +215,7 @@ public class Game extends JFrame {
 					y -= yPlane * speed;
 				}
 			}
-			if (right){
+			if (right) {
 				if (map[(int)(x + xPlane * speed)][(int)y] == 0) {
 					x += xPlane * speed;
 				}
@@ -235,9 +239,9 @@ public class Game extends JFrame {
 			player.setYDir(yDir);
 			player.setXPlane(xPlane);
 			player.setYPlane(yPlane);
-			if (player.getReloading() > 0) {
-				player.setReloading(player.getReloading() - DELAY);
-				if (player.getReloading() <= 0) {
+			if (player.getReload() > 0) {
+				player.setReload(player.getReload() - DELAY);
+				if (player.getReload() <= 0) {
 					player.setAmmo(player.getMaxAmmo());
 				}
 			}
@@ -290,12 +294,12 @@ public class Game extends JFrame {
 	}
 
 	private void mousePressed() {
-		if (player.getClickedLeft() && System.currentTimeMillis() - player.getLastFired() > player.getFireRate() && player.getReloading() <= 0) {
+		if (player.getClickedLeft() && System.currentTimeMillis() - player.getLastFired() > player.getFireRate() && player.getReload() <= 0) {
 			Bullet bullet = new Bullet(player.getX(), player.getY(), player.getXDir(), player.getYDir());
 			player.getBullets().add(bullet);
 			player.setAmmo(player.getAmmo() - 1);
 			if (player.getAmmo() <= 0) {
-				player.setReloading(1000);
+				player.setReload(1000);
 			}
 			player.setLastFired(System.currentTimeMillis());
 		}
@@ -353,17 +357,17 @@ public class Game extends JFrame {
 		public void keyPressed(KeyEvent e) {
 			int key = e.getKeyCode();
 
-			if (key == KeyEvent.VK_W){
+			if (key == KeyEvent.VK_W) {
 				player.setForward(true);
-			} else if (key == KeyEvent.VK_A){
+			} else if (key == KeyEvent.VK_A) {
 				player.setLeft(true);
-			} else if (key == KeyEvent.VK_S){
+			} else if (key == KeyEvent.VK_S) {
 				player.setBack(true);
-			} else if (key == KeyEvent.VK_D){
+			} else if (key == KeyEvent.VK_D) {
 				player.setRight(true);
 			} else if (key == KeyEvent.VK_R) {
 				spawnPlayer();
-			} else if (key == KeyEvent.VK_ESCAPE){
+			} else if (key == KeyEvent.VK_ESCAPE) {
 				player.setRotation(0);
 				player.setInGame(!player.inGame());
 
@@ -374,6 +378,8 @@ public class Game extends JFrame {
 				for (Player p : players) {
 					System.out.println(p.getName() + " xy " + p.getX() + " " + p.getY());
 				}
+			} else if (key == KeyEvent.VK_H) {
+				player.setHealth(player.getHealth() - 50);
 			}
 		}
 
@@ -381,13 +387,13 @@ public class Game extends JFrame {
 		public void keyReleased(KeyEvent e) {
 			int key = e.getKeyCode();
 
-			if (key == KeyEvent.VK_W){
+			if (key == KeyEvent.VK_W) {
 				player.setForward(false);
-			} else if (key == KeyEvent.VK_A){
+			} else if (key == KeyEvent.VK_A) {
 				player.setLeft(false);
-			} else if (key == KeyEvent.VK_S){
+			} else if (key == KeyEvent.VK_S) {
 				player.setBack(false);
-			} else if (key == KeyEvent.VK_D){
+			} else if (key == KeyEvent.VK_D) {
 				player.setRight(false);
 			}
 		}

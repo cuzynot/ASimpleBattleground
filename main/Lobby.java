@@ -171,7 +171,7 @@ public class Lobby {
 			} else if (key == KeyEvent.VK_ENTER) {
 				enterGame();
 			} else if (key != KeyEvent.VK_SPACE) {
-				// } else if ((key != KeyEvent.VK_SHIFT) && (key != KeyEvent.VK_CONTROL) && (key != KeyEvent.VK_ALT)){
+				// } else if ((key != KeyEvent.VK_SHIFT) && (key != KeyEvent.VK_CONTROL) && (key != KeyEvent.VK_ALT)) {
 				char c = e.getKeyChar();
 				if (s.length() < Field.getMaxLength()) {
 					if (curString == 0) {

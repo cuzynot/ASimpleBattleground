@@ -10,13 +10,13 @@ public class Player implements Moveable{
 	private boolean left, right, forward, back; // keys pressed
 	private boolean inGame;
 	
-	private int reloading;
-	private int respawning;
+	private int reload;
+	private int respawn;
 
 	private double x, y; // player positions
 	private double xDir, yDir; // player directions vectors
-	private double xPlane, yPlane; // farthest edge of the camera's view
-	private double rotation; // player camera rotation
+	private double xPlane, yPlane; // farthest edge of the cinGamera's view
+	private double rotation; // player cinGamera rotation
 	
 	private int score;
 	private String name;
@@ -33,7 +33,7 @@ public class Player implements Moveable{
 	protected double fireRate;
 	protected double zoom;
 
-	// constructor
+	// conStringuctor
 	public Player(String name, double x, double y, double xd, double yd, double xp, double yp){
 		this.name = name;
 		this.x = x;
@@ -45,8 +45,8 @@ public class Player implements Moveable{
 		this.inGame = true;
 		this.score = 0;
 		this.bullets = new SimpleLinkedList<Bullet>();
-		this.reloading = 0;
-		this.respawning = 0;
+		this.reload = 0;
+		this.respawn = 0;
 
 		try {
 			robot = new Robot();
@@ -60,8 +60,8 @@ public class Player implements Moveable{
 		this.inGame = true;
 		this.score = 0;
 		this.bullets = new SimpleLinkedList<Bullet>();
-		this.reloading = 0;
-		this.respawning = 0;
+		this.reload = 0;
+		this.respawn = 0;
 
 		try {
 			robot = new Robot();
@@ -99,12 +99,12 @@ public class Player implements Moveable{
 		return inGame;
 	}
 
-	public int getReloading() {
-		return reloading;
+	public int getReload() {
+		return reload;
 	}
 	
-	public int getRespawning() {
-		return respawning;
+	public int getRespawn() {
+		return respawn;
 	}
 	
 	public int getScore() {
@@ -216,12 +216,12 @@ public class Player implements Moveable{
 		this.inGame = inGame;
 	}
 
-	public void setReloading(int reloading) {
-		this.reloading = reloading;
+	public void setReload(int reload) {
+		this.reload = reload;
 	}
 	
-	public void setRespawning(int respawning) {
-		this.respawning = respawning;
+	public void setRespawn(int respawn) {
+		this.respawn = respawn;
 	}
 	
 	public void setScore(int score) {

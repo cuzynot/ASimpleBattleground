@@ -88,70 +88,78 @@ public class Display extends JPanel {
 
 	public void paintComponent(Graphics g) {
 		if (player.inGame()) {
-			update();
+			// if the player is respawning
+			if (player.getHealth() > 0 && player.getRespawn() <= 0) {
+				update();
 
-			// draw the background image
-			if (player.getClickedRight()) { // if the player is scoped in
-				int zoomW = (int)(image.getWidth() * player.getZoom());
-				int zoomH = (int)(image.getHeight() * player.getZoom());
-				BufferedImage sub = image.getSubimage(zoomW, zoomH, image.getWidth() - zoomW * 2, image.getHeight() - zoomH * 2);
-				g.drawImage(sub, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, null);
-			} else {
-				g.drawImage(image, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, null);
-			}
-
-			// draw weapon
-			if (player.getClickedRight()) {
-				if (player instanceof Assassin) {
-					g.drawImage(assassinScope, SCREEN_WIDTH / 2 - SCREEN_WIDTH / 8, SCREEN_HEIGHT / 2, SCREEN_WIDTH / 4, SCREEN_HEIGHT / 2, null);
-				} else if (player instanceof Guard) {
-					g.drawImage(guardScope, SCREEN_WIDTH / 2 - SCREEN_WIDTH / 8, SCREEN_HEIGHT / 2, SCREEN_WIDTH / 4, SCREEN_HEIGHT / 2, null);
-				} else if (player instanceof Sniper) {
-					g.drawImage(sniperScope, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, null);
-				} else if (player instanceof Soldier) {
-					g.drawImage(soldierScope, SCREEN_WIDTH / 2 - SCREEN_WIDTH / 8, SCREEN_HEIGHT / 2, SCREEN_WIDTH / 4, SCREEN_HEIGHT / 2, null);
+				// draw the background image
+				if (player.getClickedRight()) { // if the player is scoped in
+					int zoomW = (int)(image.getWidth() * player.getZoom());
+					int zoomH = (int)(image.getHeight() * player.getZoom());
+					BufferedImage sub = image.getSubimage(zoomW, zoomH, image.getWidth() - zoomW * 2, image.getHeight() - zoomH * 2);
+					g.drawImage(sub, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, null);
+				} else {
+					g.drawImage(image, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, null);
 				}
-			} else {
-				if (player instanceof Assassin) {
-					g.drawImage(assassinWeapon, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, null);
-				} else if (player instanceof Guard) {
-					g.drawImage(guardWeapon, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, null);
-				} else if (player instanceof Sniper) {
-					g.drawImage(sniperWeapon, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, null);
-				} else if (player instanceof Soldier) {
-					g.drawImage(soldierWeapon, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, null);
+
+				// draw weapon
+				if (player.getClickedRight()) {
+					if (player instanceof Assassin) {
+						g.drawImage(assassinScope, SCREEN_WIDTH / 2 - SCREEN_WIDTH / 8, SCREEN_HEIGHT / 2, SCREEN_WIDTH / 4, SCREEN_HEIGHT / 2, null);
+					} else if (player instanceof Guard) {
+						g.drawImage(guardScope, SCREEN_WIDTH / 2 - SCREEN_WIDTH / 8, SCREEN_HEIGHT / 2, SCREEN_WIDTH / 4, SCREEN_HEIGHT / 2, null);
+					} else if (player instanceof Sniper) {
+						g.drawImage(sniperScope, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, null);
+					} else if (player instanceof Soldier) {
+						g.drawImage(soldierScope, SCREEN_WIDTH / 2 - SCREEN_WIDTH / 8, SCREEN_HEIGHT / 2, SCREEN_WIDTH / 4, SCREEN_HEIGHT / 2, null);
+					}
+				} else {
+					if (player instanceof Assassin) {
+						g.drawImage(assassinWeapon, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, null);
+					} else if (player instanceof Guard) {
+						g.drawImage(guardWeapon, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, null);
+					} else if (player instanceof Sniper) {
+						g.drawImage(sniperWeapon, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, null);
+					} else if (player instanceof Soldier) {
+						g.drawImage(soldierWeapon, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, null);
+					}
 				}
-			}
 
-			// CHANGE IMAGE FOR SCOPING
+				// CHANGE IMAGE FOR SCOPING
 
-			// draw health
-			g.setColor(Color.GREEN);
-			g.fillRect(0, SCREEN_HEIGHT * 19 / 20, (int)(player.getHealth() * SCREEN_WIDTH / player.getMaxHealth()), SCREEN_HEIGHT / 20);
+				// draw health
+				g.setColor(Color.GREEN);
+				g.fillRect(0, SCREEN_HEIGHT * 19 / 20, (int)(player.getHealth() * SCREEN_WIDTH / player.getMaxHealth()), SCREEN_HEIGHT / 20);
 
-			g.setColor(Color.WHITE);
-			if (player.getReloading() > 0) {
-				// draw reloading arc
-				g.fillArc(SCREEN_WIDTH / 2 - CROSSHAIR_LENGTH, SCREEN_HEIGHT / 2 - CROSSHAIR_LENGTH, CROSSHAIR_LENGTH * 2, CROSSHAIR_LENGTH * 2, 90, 360 * player.getReloading() / 1000);
-			} else {
-				// draw crosshair
 				g.setColor(Color.WHITE);
-				g.drawLine(SCREEN_WIDTH / 2 - CROSSHAIR_LENGTH, SCREEN_HEIGHT / 2, SCREEN_WIDTH / 2 + CROSSHAIR_LENGTH, SCREEN_HEIGHT / 2);
-				g.drawLine(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 - CROSSHAIR_LENGTH, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 + CROSSHAIR_LENGTH);
-			}
-
-			// draw ammo count
-			g.setFont(font);
-			g.setColor(Color.WHITE);
-			g.drawString(player.getAmmo() + "/" + player.getMaxAmmo(), SCREEN_WIDTH - SCREEN_WIDTH / 20, SCREEN_HEIGHT - SCREEN_WIDTH / 20);
-
-			// draw players list
-			g.setFont(font);
-			g.setColor(Color.BLACK);
-			if (players != null) {
-				for (int i = 0; i < players.size(); i++) {
-					g.drawString(players.get(i).getName(), SCREEN_WIDTH * 9 / 10, SCREEN_HEIGHT / 20 * (i + 1));
+				if (player.getReload() > 0) {
+					// draw reloading arc
+					g.fillArc(SCREEN_WIDTH / 2 - CROSSHAIR_LENGTH, SCREEN_HEIGHT / 2 - CROSSHAIR_LENGTH, CROSSHAIR_LENGTH * 2, CROSSHAIR_LENGTH * 2, 90, 360 * player.getReload() / 1000);
+				} else {
+					// draw crosshair
+					g.setColor(Color.WHITE);
+					g.drawLine(SCREEN_WIDTH / 2 - CROSSHAIR_LENGTH, SCREEN_HEIGHT / 2, SCREEN_WIDTH / 2 + CROSSHAIR_LENGTH, SCREEN_HEIGHT / 2);
+					g.drawLine(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 - CROSSHAIR_LENGTH, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 + CROSSHAIR_LENGTH);
 				}
+
+				// draw ammo count
+				g.setFont(font);
+				g.setColor(Color.WHITE);
+				g.drawString(player.getAmmo() + "/" + player.getMaxAmmo(), SCREEN_WIDTH - SCREEN_WIDTH / 20, SCREEN_HEIGHT - SCREEN_WIDTH / 20);
+
+				// draw players list
+				g.setFont(font);
+				g.setColor(Color.BLACK);
+				if (players != null) {
+					for (int i = 0; i < players.size(); i++) {
+						g.drawString(players.get(i).getName(), SCREEN_WIDTH * 9 / 10, SCREEN_HEIGHT / 20 * (i + 1));
+					}
+				}
+			} else {
+				g.setColor(Color.BLACK);
+				g.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+				g.setColor(Color.WHITE);
+				g.fillArc(SCREEN_WIDTH / 2 - CROSSHAIR_LENGTH, SCREEN_HEIGHT / 2 - CROSSHAIR_LENGTH, CROSSHAIR_LENGTH * 2, CROSSHAIR_LENGTH * 2, 90, 360 * player.getRespawn() / 3000);
 			}
 		} else {
 			g.setColor(Color.WHITE);
