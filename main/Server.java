@@ -24,6 +24,7 @@ import javax.swing.JTextField;
 import data_structures.SimpleLinkedList;
 import data_structures.SimpleQueue;
 import graphics.Field;
+import player.Player;
 
 public class Server {
 
@@ -74,7 +75,7 @@ public class Server {
 		randomizeMap();
 
 		Socket client = null; //hold the client connection
-		
+
 		System.out.println("waiting for clients");
 
 		try {
@@ -241,7 +242,7 @@ public class Server {
 		for (int i = 0; i < clients.size(); i++) {
 			ClientObject cur = clients.get(i);
 			if (!cur.getUsername().equals(user)) {
-				cur.getOutput().println("add " + user);
+				cur.getOutput().println("add " + user + " 0");
 				cur.getOutput().flush();
 			}
 		}
@@ -275,13 +276,16 @@ public class Server {
 						if (msg.equals("exit")) { // if a user decides to exit
 							delete(client.getUsername()); // remove their reference
 
-						} else if (msg.startsWith("hit ")) {
+						} else if (msg.startsWith("hit")) {
 							String[] arr = msg.split(" ");
 							printToOne(arr[1], msg);
 
-						} else {// if (msg.startsWith("xy ")) {
-							// truncate message
-							// msg = msg.substring(3);
+						} else {// if (msg.startsWith("xy ")) { // or score
+							if (msg.startsWith("score")) {
+								int score = Integer.parseInt(msg.substring(msg.lastIndexOf(" ") + 1));
+								client.setScore(score);
+							}
+
 							// print message to everybody
 							printToAll(client.getUsername(), msg);
 						}
@@ -372,7 +376,7 @@ public class Server {
 			g.setColor(alt);
 			g.setFont(font);
 			g.drawString("PORT:", 0, port.getY2());
-			
+
 			g.setColor(Color.BLACK);
 			g.setFont(font);
 			g.drawString(port.getString(), port.getX1(), port.getY2());
@@ -385,6 +389,8 @@ public class Server {
 	private class ClientObject {
 		private String username; // client username
 		private String status = ""; // user status
+		private int score;
+
 		private PrintWriter output; // assign printwriter to network stream
 		private BufferedReader input; // stream for network input
 		private Socket client;  // keeps track of the client socket
@@ -399,6 +405,7 @@ public class Server {
 				output = new PrintWriter(client.getOutputStream());
 				input = new BufferedReader(new InputStreamReader(client.getInputStream()));
 				username = input.readLine();
+				score = 0;
 
 				String[] usernames = new String[clients.size()];
 
@@ -417,7 +424,7 @@ public class Server {
 						return;
 					}
 
-					usernames[i] = "add " + cur.getUsername();
+					usernames[i] = "add " + cur.getUsername() + " " + cur.getScore();
 				}
 
 				// set status to online
@@ -426,6 +433,7 @@ public class Server {
 				// send usernames and statuses of currently active users to client
 				output.println("notduplicate");
 				for (String s : usernames) {
+					System.out.println("printed " + s);
 					output.println(s);
 					output.flush();
 				}
@@ -447,6 +455,14 @@ public class Server {
 				e.printStackTrace();
 			}            
 		}
+		
+		/** setScore
+		 * This method updates the score of a user
+		 * @param int score, new score of a user
+		 */
+		public void setScore(int score) {
+			this.score = score;
+		}
 
 		/** getStatus
 		 * This method retuns the status of a user
@@ -462,6 +478,14 @@ public class Server {
 		 */
 		public String getUsername() {
 			return username;
+		}
+		
+		/** getScore
+		 * This method retuns the score of a user
+		 * @return int username, current score of client
+		 */
+		public int getScore() {
+			return score;
 		}
 
 		/** getOutput

@@ -33,12 +33,17 @@ public class Display extends JPanel {
 	private int darkerColorRGB;
 	private Font font;
 	private Font logo;
-	private Button quit;
+	private Button exit;
+	private Button prevBuild;
+	private Button nextBuild;
+	private int curBuild;
+	private final int OFFSET;
 
 	private Player player;
 	private SimpleLinkedList<Player> players;
 
 	// images
+	private BufferedImage image;
 	private static BufferedImage assassinWeapon;
 	private static BufferedImage guardWeapon;
 	private static BufferedImage sniperWeapon;
@@ -47,7 +52,10 @@ public class Display extends JPanel {
 	private static BufferedImage guardScope;
 	private static BufferedImage sniperScope;
 	private static BufferedImage soldierScope;
-	private static BufferedImage image;
+	private static BufferedImage assassinIcon;
+	private static BufferedImage guardIcon;
+	private static BufferedImage sniperIcon;
+	private static BufferedImage soldierIcon;
 	private int[] pixels;
 
 	// constructor
@@ -63,8 +71,21 @@ public class Display extends JPanel {
 
 		CROSSHAIR_LENGTH = SCREEN_WIDTH / 100;
 		font = new Font("Lora", Font.PLAIN, SCREEN_WIDTH / 50);
-		quit = new Button(SCREEN_WIDTH / 2 - SCREEN_HEIGHT / 16, SCREEN_HEIGHT / 2 - SCREEN_HEIGHT / 32, SCREEN_WIDTH / 2 + SCREEN_HEIGHT / 16, SCREEN_HEIGHT / 2 + SCREEN_HEIGHT / 32, "QUIT");
+		//quit = new Button(SCREEN_WIDTH / 2 - SCREEN_HEIGHT / 16, SCREEN_HEIGHT / 2 - SCREEN_HEIGHT / 32, SCREEN_WIDTH / 2 + SCREEN_HEIGHT / 16, SCREEN_HEIGHT / 2 + SCREEN_HEIGHT / 32, "QUIT");
+		exit = new Button(SCREEN_WIDTH - SCREEN_HEIGHT / 32, 0, SCREEN_WIDTH, SCREEN_HEIGHT / 32, "");
+		prevBuild = new Button(SCREEN_WIDTH * 3 / 7 - SCREEN_WIDTH / 100, SCREEN_HEIGHT * 58 / 100 - SCREEN_WIDTH / 100, SCREEN_WIDTH * 3 / 7 + SCREEN_WIDTH / 100, SCREEN_HEIGHT * 58 / 100 + SCREEN_WIDTH / 100, "<");
+		nextBuild = new Button(SCREEN_WIDTH * 4 / 7 - SCREEN_WIDTH / 100, SCREEN_HEIGHT * 58 / 100 - SCREEN_WIDTH / 100, SCREEN_WIDTH * 4 / 7 + SCREEN_WIDTH / 100, SCREEN_HEIGHT * 58 / 100 + SCREEN_WIDTH / 100, ">");
 		logo = new Font("Helvetica", Font.BOLD | Font.ITALIC, SCREEN_WIDTH / 15);
+		OFFSET = 10;
+		if (player instanceof Assassin) {
+			curBuild = 0;
+		} else if (player instanceof Guard) {
+			curBuild = 1;
+		} else if (player instanceof Sniper) {
+			curBuild = 2;
+		} else if (player instanceof Soldier) {
+			curBuild = 3;
+		}
 
 		try {
 			assassinWeapon = ImageIO.read(new File("res/assassinWeapon.png"));
@@ -75,6 +96,10 @@ public class Display extends JPanel {
 			guardScope = ImageIO.read(new File("res/guardScope.png"));
 			sniperScope = ImageIO.read(new File("res/sniperScope.png"));
 			soldierScope = ImageIO.read(new File("res/soldierScope.png"));
+			assassinIcon = ImageIO.read(new File("res/assassinIcon.png"));
+			guardIcon = ImageIO.read(new File("res/guardIcon.png"));
+			sniperIcon = ImageIO.read(new File("res/sniperIcon.png"));
+			soldierIcon = ImageIO.read(new File("res/soldierIcon.png"));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -147,12 +172,17 @@ public class Display extends JPanel {
 
 				// draw players list
 				g.setFont(font);
-				g.setColor(Color.BLACK);
+				g.setColor(Color.WHITE);
 				if (players != null) {
+					g.drawString(player.getName(), SCREEN_WIDTH * 3 / 4, SCREEN_HEIGHT / 20);
+					g.drawString(Integer.toString(player.getScore()), SCREEN_WIDTH * 15 / 16, SCREEN_HEIGHT / 20);
 					for (int i = 0; i < players.size(); i++) {
-						g.drawString(players.get(i).getName(), SCREEN_WIDTH * 9 / 10, SCREEN_HEIGHT / 20 * (i + 1));
+						g.drawString(players.get(i).getName(), SCREEN_WIDTH * 3 / 4, SCREEN_HEIGHT / 20 * (i + 2));
+						g.drawString(Integer.toString(players.get(i).getScore()), SCREEN_WIDTH * 15 / 16, SCREEN_HEIGHT / 20 * (i + 2));
 					}
 				}
+
+				// draw players' scores
 			} else {
 				g.setColor(Color.BLACK);
 				g.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
@@ -169,9 +199,33 @@ public class Display extends JPanel {
 			g.drawString("A SIMPLE BATTLEGROUND", SCREEN_WIDTH / 32, SCREEN_HEIGHT / 5);
 
 			// draw exit button
-			g.setColor(Color.DARK_GRAY);
+			g.setColor(color);
+			g.fillRect(exit.getX1(), exit.getY1(), exit.getX2() - exit.getX1(), exit.getY2() - exit.getY1());
+			g.setColor(Color.WHITE);
+			g.drawLine(exit.getX1(), exit.getY1(), exit.getX2(), exit.getY2());
+			g.drawLine(exit.getX2(), exit.getY1(), exit.getX1(), exit.getY2());
+
+			// draw builds
+			g.setColor(color);
 			g.setFont(font);
-			g.drawString(quit.getString(), quit.getX1(), quit.getY2());
+			g.drawString(prevBuild.getString(), prevBuild.getX1(), prevBuild.getY2() - OFFSET);
+			g.drawString(nextBuild.getString(), nextBuild.getX1(), nextBuild.getY2() - OFFSET);
+
+			// draw build icons
+			g.setColor(color);
+			if (curBuild == 0) {
+				g.drawImage(assassinIcon, SCREEN_WIDTH * 9 / 20, SCREEN_HEIGHT / 2, SCREEN_WIDTH / 10, SCREEN_WIDTH / 10, null);
+				g.drawString("Assassin", SCREEN_WIDTH * 23 / 50, SCREEN_HEIGHT * 7 / 10);
+			} else if (curBuild == 1) {
+				g.drawImage(guardIcon, SCREEN_WIDTH * 9 / 20, SCREEN_HEIGHT / 2, SCREEN_WIDTH / 10, SCREEN_WIDTH / 10, null);
+				g.drawString("  Guard ", SCREEN_WIDTH * 23 / 50, SCREEN_HEIGHT * 7 / 10);
+			} else if (curBuild == 2) {
+				g.drawImage(sniperIcon, SCREEN_WIDTH * 9 / 20, SCREEN_HEIGHT / 2, SCREEN_WIDTH / 10, SCREEN_WIDTH / 10, null);
+				g.drawString("  Sniper", SCREEN_WIDTH * 23 / 50, SCREEN_HEIGHT * 7 / 10);
+			} else if (curBuild == 3) {
+				g.drawImage(soldierIcon, SCREEN_WIDTH * 9 / 20, SCREEN_HEIGHT / 2, SCREEN_WIDTH / 10, SCREEN_WIDTH / 10, null);
+				g.drawString(" Soldier", SCREEN_WIDTH * 23 / 50, SCREEN_HEIGHT * 7 / 10);
+			}
 		}
 		repaint();
 	}
@@ -312,8 +366,24 @@ public class Display extends JPanel {
 		}
 	}
 
-	public Button getQuit() {
-		return quit;
+	public Button getExit() {
+		return exit;
+	}
+	
+	public Button getPrevBuild() {
+		return prevBuild;
+	}
+	
+	public Button getNextBuild() {
+		return nextBuild;
+	}
+	
+	public int getCurBuild() {
+		return curBuild;
+	}
+	
+	public void setCurBuild(int curBuild) {
+		this.curBuild = curBuild;
 	}
 
 	private double dist(Player a, Player b) {

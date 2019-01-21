@@ -76,8 +76,8 @@ public class Lobby {
 		SCREEN_HEIGHT = (int)(Toolkit.getDefaultToolkit().getScreenSize().getHeight());
 		ROTATE_SPEED = 0.02;
 		ip = new Field(SCREEN_WIDTH / 3, SCREEN_HEIGHT * 7 / 16, SCREEN_WIDTH * 2 / 3, SCREEN_HEIGHT / 2, 20);
-		port = new Field(SCREEN_WIDTH / 3, SCREEN_HEIGHT / 2, SCREEN_WIDTH * 2 / 3, SCREEN_HEIGHT * 9 / 16, 20);
-		name = new Field(SCREEN_WIDTH / 3, SCREEN_HEIGHT * 9 / 16, SCREEN_WIDTH * 2 / 3, SCREEN_HEIGHT * 5 / 8, 20);
+		port = new Field(SCREEN_WIDTH / 3, SCREEN_HEIGHT / 2, SCREEN_WIDTH * 2 / 3, SCREEN_HEIGHT * 9 / 16, 4);
+		name = new Field(SCREEN_WIDTH / 3, SCREEN_HEIGHT * 9 / 16, SCREEN_WIDTH * 2 / 3, SCREEN_HEIGHT * 5 / 8, 15);
 		enter = new Button(SCREEN_WIDTH * 7 / 16, (int)(SCREEN_HEIGHT / 1.2) - SCREEN_HEIGHT / 32, SCREEN_WIDTH * 9 / 16, (int)(SCREEN_HEIGHT / 1.2) + SCREEN_HEIGHT / 32, "ENTER");
 		exit = new Button(SCREEN_WIDTH - SCREEN_HEIGHT / 32, 0, SCREEN_WIDTH, SCREEN_HEIGHT / 32, "");
 		prevBuild = new Button(SCREEN_WIDTH * 7 / 9 - SCREEN_WIDTH / 100, SCREEN_HEIGHT * 3 / 5 - SCREEN_WIDTH / 100, SCREEN_WIDTH * 7 / 9 + SCREEN_WIDTH / 100, SCREEN_HEIGHT * 3 / 5 + SCREEN_WIDTH / 100, "<");

@@ -19,16 +19,6 @@ import player.Player;
 
 public class Game extends JFrame {
 
-	// run
-	public static void main (String[] args) {
-//		Thread t = new Thread(new Runnable() {
-//			public void run() {
-//				new Game(new Client("localhost", 5000, "adfa", 0));
-//			}
-//		});
-//		t.start();
-	}
-
 	// Camera
 	private Player player;
 
@@ -85,7 +75,7 @@ public class Game extends JFrame {
 		player = client.getPlayer();
 		players = client.getPlayers();
 		map = client.getMap();
-		
+
 		// init Screen
 		display = new Display(map, SCREEN_WIDTH, SCREEN_HEIGHT, color, player, players); // screen = new Screen(map, mapWidth, mapHeight, textures, 640, 480)
 		add(display);
@@ -147,6 +137,7 @@ public class Game extends JFrame {
 	// game loop
 	private void loop() {
 		while (true) {
+			playerStatus();
 			if (player.inGame()) {
 				updatePlayer();
 				client.update();
@@ -160,8 +151,7 @@ public class Game extends JFrame {
 		}
 	}
 
-	// update camera view
-	private void updatePlayer() {
+	private void playerStatus() {
 		if (player.getHealth() <= 0) {
 			player.setRespawn(3000);
 			player.setX(-1);
@@ -172,110 +162,113 @@ public class Game extends JFrame {
 			if (player.getRespawn() <= 0) {
 				spawnPlayer();
 			}
-		} else {
-			// get player variables
-			boolean forward = player.getForward();
-			boolean left = player.getLeft();
-			boolean back = player.getBack();
-			boolean right = player.getRight();
+		}
+	}
 
-			double x = player.getX();
-			double y = player.getY();
-			double xDir = player.getXDir();
-			double yDir = player.getYDir();
-			double speed = player.getSpeed();
-			double rotation = player.getRotation();
-			double xPlane = player.getXPlane();
-			double yPlane = player.getYPlane();
+	// update camera view
+	private void updatePlayer() {
+		// get player variables
+		boolean forward = player.getForward();
+		boolean left = player.getLeft();
+		boolean back = player.getBack();
+		boolean right = player.getRight();
 
-			// move player
-			if (forward) {
-				if (map[(int)(x + xDir * speed)][(int)y] == 0) {
-					x += xDir * speed;
-				}
-				if (map[(int)x][(int)(y + yDir * speed)] == 0) {
-					y += yDir * speed;
-				}
+		double x = player.getX();
+		double y = player.getY();
+		double xDir = player.getXDir();
+		double yDir = player.getYDir();
+		double speed = player.getSpeed();
+		double rotation = player.getRotation();
+		double xPlane = player.getXPlane();
+		double yPlane = player.getYPlane();
+
+		// move player
+		if (forward) {
+			if (map[(int)(x + xDir * speed)][(int)y] == 0) {
+				x += xDir * speed;
 			}
-			if (back) {
-				if (map[(int)(x - xDir * speed)][(int)y] == 0) {
-					x -= xDir * speed;
-				}
-				if (map[(int)x][(int)(y - yDir * speed)] == 0) {
-					y -= yDir * speed;
-				}
+			if (map[(int)x][(int)(y + yDir * speed)] == 0) {
+				y += yDir * speed;
 			}
-
-			// reduced speed on strafing
-			if (left) {
-				if (map[(int)(x - xPlane * speed)][(int)y] == 0) {
-					x -= xPlane * speed;
-				}
-				if (map[(int)x][(int)(y - yPlane * speed)] == 0) {
-					y -= yPlane * speed;
-				}
+		}
+		if (back) {
+			if (map[(int)(x - xDir * speed)][(int)y] == 0) {
+				x -= xDir * speed;
 			}
-			if (right) {
-				if (map[(int)(x + xPlane * speed)][(int)y] == 0) {
-					x += xPlane * speed;
-				}
-				if (map[(int)x][(int)(y + yPlane * speed)] == 0) {
-					y += yPlane * speed;
-				}
+			if (map[(int)x][(int)(y - yDir * speed)] == 0) {
+				y -= yDir * speed;
 			}
+		}
 
-			// camera rotation
-			double oldxDir = xDir;
-			xDir = xDir * Math.cos(rotation) - yDir * Math.sin(rotation);
-			yDir = oldxDir * Math.sin(rotation) + yDir * Math.cos(rotation);
-
-			double oldxPlane = xPlane;
-			xPlane = xPlane * Math.cos(rotation) - yPlane * Math.sin(rotation);
-			yPlane = oldxPlane * Math.sin(rotation) + yPlane * Math.cos(rotation);
-
-			player.setX(x);
-			player.setY(y);
-			player.setXDir(xDir);
-			player.setYDir(yDir);
-			player.setXPlane(xPlane);
-			player.setYPlane(yPlane);
-			if (player.getReload() > 0) {
-				player.setReload(player.getReload() - DELAY);
-				if (player.getReload() <= 0) {
-					player.setAmmo(player.getMaxAmmo());
-				}
+		// reduced speed on strafing
+		if (left) {
+			if (map[(int)(x - xPlane * speed)][(int)y] == 0) {
+				x -= xPlane * speed;
 			}
+			if (map[(int)x][(int)(y - yPlane * speed)] == 0) {
+				y -= yPlane * speed;
+			}
+		}
+		if (right) {
+			if (map[(int)(x + xPlane * speed)][(int)y] == 0) {
+				x += xPlane * speed;
+			}
+			if (map[(int)x][(int)(y + yPlane * speed)] == 0) {
+				y += yPlane * speed;
+			}
+		}
 
-			mouseMoved();
-			mousePressed();
+		// camera rotation
+		double oldxDir = xDir;
+		xDir = xDir * Math.cos(rotation) - yDir * Math.sin(rotation);
+		yDir = oldxDir * Math.sin(rotation) + yDir * Math.cos(rotation);
 
-			for (int i = 0; i < player.getBullets().size(); i++) {
-				Bullet bullet = player.getBullets().get(i);
-				bullet.setX(bullet.getX() + bullet.getXDir() * 0.1);
-				bullet.setY(bullet.getY() + bullet.getYDir() * 0.1);
+		double oldxPlane = xPlane;
+		xPlane = xPlane * Math.cos(rotation) - yPlane * Math.sin(rotation);
+		yPlane = oldxPlane * Math.sin(rotation) + yPlane * Math.cos(rotation);
 
-				double bx = bullet.getX();
-				double by = bullet.getY();
+		player.setX(x);
+		player.setY(y);
+		player.setXDir(xDir);
+		player.setYDir(yDir);
+		player.setXPlane(xPlane);
+		player.setYPlane(yPlane);
+		if (player.getReload() > 0) {
+			player.setReload(player.getReload() - DELAY);
+			if (player.getReload() <= 0) {
+				player.setAmmo(player.getMaxAmmo());
+			}
+		}
 
-				if (map[(int)(bx)][(int)(by)] != 0 || bx < 0 || bx > map.length || by < 0 || by > map[0].length) {
-					System.out.println("hit wall");
-					player.getBullets().remove(i);
-					i--;
+		mouseMoved();
+		mousePressed();
 
-				} else {
-					int j = 0;
-					boolean hit = false;
-					while (!hit && j < players.size()) {
-						if (bullet.collides(players.get(j))) {
-							client.println("hit " + players.get(j).getName() + " " + player.getDamage());
-							player.getBullets().remove(i);
-							i--;
+		for (int i = 0; i < player.getBullets().size(); i++) {
+			Bullet bullet = player.getBullets().get(i);
+			bullet.setX(bullet.getX() + bullet.getXDir() * 0.1);
+			bullet.setY(bullet.getY() + bullet.getYDir() * 0.1);
 
-							System.out.println("hit " + players.get(j).getName());
-							hit = true;
-						}
-						j++;
+			double bx = bullet.getX();
+			double by = bullet.getY();
+
+			if (map[(int)(bx)][(int)(by)] != 0 || bx < 0 || bx > map.length || by < 0 || by > map[0].length) {
+				System.out.println("hit wall");
+				player.getBullets().remove(i);
+				i--;
+
+			} else {
+				int j = 0;
+				boolean hit = false;
+				while (!hit && j < players.size()) {
+					if (bullet.collides(players.get(j))) {
+						client.println("hit " + players.get(j).getName() + " " + player.getDamage() + " " + player.getName());
+						player.getBullets().remove(i);
+						i--;
+
+						System.out.println("hit " + players.get(j).getName());
+						hit = true;
 					}
+					j++;
 				}
 			}
 		}
@@ -321,10 +314,46 @@ public class Game extends JFrame {
 			} else {
 				double x = e.getPoint().getX();
 				double y = e.getPoint().getY();
-				if (display.getQuit().clicked(x, y)) {
+				if (display.getExit().clicked(x, y)) {
 					client.disconnect();
 					dispose();
-				}
+				} else if (display.getPrevBuild().clicked(x, y) || display.getNextBuild().clicked(x, y)) {
+					if (display.getPrevBuild().clicked(x, y)) {
+						if (display.getCurBuild() > 0) {
+							display.setCurBuild(display.getCurBuild() - 1);
+						} else {
+							display.setCurBuild(3);
+						}
+					} else if (display.getNextBuild().clicked(x, y)) {
+						if (display.getCurBuild() < 3) {
+							display.setCurBuild(display.getCurBuild() + 1);
+						} else {
+							display.setCurBuild(0);
+						}
+					}
+					
+					// SET PLAYER BUILD WHEN RESPAWN
+					// SET PLAYER BUILD WHEN RESPAWN
+					// SET PLAYER BUILD WHEN RESPAWN
+					// SET PLAYER BUILD WHEN RESPAWN
+					// SET PLAYER BUILD WHEN RESPAWN
+					// SET PLAYER BUILD WHEN RESPAWN
+					// SET PLAYER BUILD WHEN RESPAWN
+					// SET PLAYER BUILD WHEN RESPAWN
+					// SET PLAYER BUILD WHEN RESPAWN
+					// SET PLAYER BUILD WHEN RESPAWN
+					// SET PLAYER BUILD WHEN RESPAWN
+					// SET PLAYER BUILD WHEN RESPAWN
+					// SET PLAYER BUILD WHEN RESPAWN
+					// SET PLAYER BUILD WHEN RESPAWN
+					// SET PLAYER BUILD WHEN RESPAWN
+					// SET PLAYER BUILD WHEN RESPAWN
+					// SET PLAYER BUILD WHEN RESPAWN
+					// SET PLAYER BUILD WHEN RESPAWN
+					if (display.getCurBuild() == 0) {
+						
+					}
+				}	
 			}
 		}
 

@@ -39,12 +39,15 @@ public class Client {
 	//	private int port;
 	private String name;
 
+	private final static int KILL_CREDIT = 50;
+	private final static int DIE_CREDIT = 10;
+
 	/**
 	 * ChatClient 
 	 * constructor
 	 * @throws IOException 
 	 */
-	public Client(String address, int port, String name, int build) throws DuplicateException, IOException {
+	public Client(String address, int port, String name, int build) throws DuplicateException, IOException {		
 		running = true;
 		//		this.address = address;
 		//		this.port = port;
@@ -64,8 +67,8 @@ public class Client {
 
 		// check duplicate username
 		String msg = input.readLine();
-		System.out.println("first msg " + msg);
 
+		// if the current username is already taken
 		if (msg.equals("duplicate")) {
 			throw new DuplicateException();
 		}
@@ -115,6 +118,7 @@ public class Client {
 
 	public void update() {
 		output.println("xy " + player.getName() + " " + player.getX() + " " + player.getY());
+		output.println("score " + player.getName() + " " + player.getScore());
 		output.flush();
 	}
 
@@ -162,6 +166,10 @@ public class Client {
 								second = arr[1];
 							}
 
+							// used for looping through list of players
+							boolean found = false;
+							int count = 0;
+
 							if (command.equals("map")) { // if send map
 								mapSize = Integer.parseInt(second);
 								map = new int[mapSize][mapSize];
@@ -174,11 +182,10 @@ public class Client {
 								}
 							} else if (command.equals("add")) { // if add user
 								players.add(new Player(second));
-								// reAddUsers();
+								int score = Integer.parseInt(arr[2]);
+								player.setScore(score);
+								
 							} else if (command.equals("delete")) { // if delete user
-								boolean found = false;
-								int count = 0;
-
 								while (!found && count < players.size()) {
 									if (players.get(count).getName().equals(second)) {
 										players.remove(count);
@@ -187,14 +194,14 @@ public class Client {
 									}
 									count++;
 								}
+								
 							} else if (command.equals("xy")) {
 								double x = Double.parseDouble(arr[2]);
 								double y = Double.parseDouble(arr[3]);
-
-								// System.out.println("xy of " + second);
-
-								boolean found = false;
-								int count = 0;
+								
+								if (!second.equals(player.getName()) && x == -1 && y == -1) {
+									System.out.println(second + " is at " + x + " " + y);
+								}
 
 								while (!found && count < players.size()) {
 									Player p = players.get(count);
@@ -206,10 +213,49 @@ public class Client {
 									}
 									count++;
 								}
+								
+							} else if (command.equals("score")) {
+								int newScore = Integer.parseInt(arr[2]);
+
+								if (player.getName().equals(second)) {
+									player.setScore(newScore);
+								} else {
+									while (!found && count < players.size()) {
+										Player p = players.get(count);
+
+										if (p.getName().equals(second)) {
+											p.setScore(newScore);
+											found = true;
+										}
+										count++;
+									}
+								}
 							} else if (command.equals("hit")) {
 								double damage = Double.parseDouble(arr[2]);
-								// System.out.println("took " + damage + "dmg");
 								player.setHealth(player.getHealth() - damage);
+
+								// if the player is killed from this shot
+								if (player.getHealth() + damage > 0 && player.getHealth() <= 0) {
+									String killer = arr[3];
+									
+									int newScore = 0;
+									// find killer's original score
+									while (!found && count < players.size()) {
+										Player p = players.get(count);
+
+										if (p.getName().equals(killer)) {
+											p.setScore(p.getScore() + KILL_CREDIT);
+											newScore = p.getScore();
+											found = true;
+										}
+										count++;
+									}
+									output.println("score " + killer + " " + newScore);
+									output.flush();
+
+									// decrement player score
+									player.setScore(player.getScore() - DIE_CREDIT);
+								}
 							}
 						}
 					}
