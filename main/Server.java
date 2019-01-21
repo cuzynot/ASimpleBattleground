@@ -13,23 +13,23 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
+import data_structures.SimpleLinkedList;
 import data_structures.SimpleQueue;
 
 public class Server {
 
 	private ServerSocket serverSocket; // server socket for connection
-	private static Boolean running = true;  // controls if the server is accepting clients
+	private static Boolean running;  // controls if the server is accepting clients
 
-	private ArrayList<ClientObject> clients = new ArrayList<ClientObject>(); // list of clients
+	private SimpleLinkedList<ClientObject> clients; // list of clients
 	private JTextField t; // textfield for the port number
 
-	private int mapSize = 10;
+	private int mapSize;
 	private static int[][] map;
 
 	/** Main
@@ -43,6 +43,10 @@ public class Server {
 	 * Makes a new frame for user to enter what port they wish their server to be on
 	 */
 	public Server() {
+		running = true;
+		clients = new SimpleLinkedList<ClientObject>(); // list of clients
+		mapSize = 10;
+		
 		// make new jcomponents for the user to choose server port number
 		JFrame f = new JFrame();
 		JPanel p = new JPanel();

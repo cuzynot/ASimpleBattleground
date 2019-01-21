@@ -9,10 +9,10 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
 
 import javax.swing.JFrame;
 
+import data_structures.SimpleLinkedList;
 import graphics.Display;
 import player.Bullet;
 import player.Player;
@@ -23,7 +23,7 @@ public class Game extends JFrame {
 	public static void main (String[] args) {
 		Thread t = new Thread(new Runnable() {
 			public void run() {
-				new Game(new Client("localhost", 5000, "adfa"));
+				new Game(new Client("localhost", 5000, "adfa", 0));
 			}
 		});
 		t.start();
@@ -56,7 +56,7 @@ public class Game extends JFrame {
 	private Client client;
 
 	// list of players
-	private ArrayList<Player> players;
+	private SimpleLinkedList<Player> players;
 
 	private static final int DELAY = 20;
 
@@ -375,7 +375,8 @@ public class Game extends JFrame {
 				toggleCursor(cursorShown);
 			} else if (key == KeyEvent.VK_Z) {
 				System.out.println("this " + " xy " + player.getX() + " " + player.getY());
-				for (Player p : players) {
+				for (int i = 0; i < players.size(); i++) {
+					Player p = players.get(i);
 					System.out.println(p.getName() + " xy " + p.getX() + " " + p.getY());
 				}
 			} else if (key == KeyEvent.VK_H) {

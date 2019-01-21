@@ -6,11 +6,11 @@ import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 
 import javax.imageio.ImageIO;
 import javax.swing.JPanel;
 
+import data_structures.SimpleLinkedList;
 import player.Player;
 import player.builds.Assassin;
 import player.builds.Guard;
@@ -36,22 +36,22 @@ public class Display extends JPanel {
 	private Button quit;
 
 	private Player player;
-	private ArrayList<Player> players;
+	private SimpleLinkedList<Player> players;
 
 	// images
-	private BufferedImage assassinWeapon;
-	private BufferedImage guardWeapon;
-	private BufferedImage sniperWeapon;
-	private BufferedImage soldierWeapon;
-	private BufferedImage assassinScope;
-	private BufferedImage guardScope;
-	private BufferedImage sniperScope;
-	private BufferedImage soldierScope;
-	private BufferedImage image;
+	private static BufferedImage assassinWeapon;
+	private static BufferedImage guardWeapon;
+	private static BufferedImage sniperWeapon;
+	private static BufferedImage soldierWeapon;
+	private static BufferedImage assassinScope;
+	private static BufferedImage guardScope;
+	private static BufferedImage sniperScope;
+	private static BufferedImage soldierScope;
+	private static BufferedImage image;
 	private int[] pixels;
 
 	// constructor
-	public Display(int[][] map, int SCREEN_WIDTH, int SCREEN_HEIGHT, Color color, Player player, ArrayList<Player> players) {
+	public Display(int[][] map, int SCREEN_WIDTH, int SCREEN_HEIGHT, Color color, Player player, SimpleLinkedList<Player> players) {
 		this.map = map;
 		this.SCREEN_WIDTH = SCREEN_WIDTH;
 		this.SCREEN_HEIGHT = SCREEN_HEIGHT;
@@ -102,7 +102,7 @@ public class Display extends JPanel {
 					g.drawImage(image, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, null);
 				}
 
-				// draw weapon
+				// draw weapon or scoped weapon
 				if (player.getClickedRight()) {
 					if (player instanceof Assassin) {
 						g.drawImage(assassinScope, SCREEN_WIDTH / 2 - SCREEN_WIDTH / 8, SCREEN_HEIGHT / 2, SCREEN_WIDTH / 4, SCREEN_HEIGHT / 2, null);
@@ -125,8 +125,6 @@ public class Display extends JPanel {
 					}
 				}
 
-				// CHANGE IMAGE FOR SCOPING
-
 				// draw health
 				g.setColor(Color.GREEN);
 				g.fillRect(0, SCREEN_HEIGHT * 19 / 20, (int)(player.getHealth() * SCREEN_WIDTH / player.getMaxHealth()), SCREEN_HEIGHT / 20);
@@ -135,7 +133,7 @@ public class Display extends JPanel {
 				if (player.getReload() > 0) {
 					// draw reloading arc
 					g.fillArc(SCREEN_WIDTH / 2 - CROSSHAIR_LENGTH, SCREEN_HEIGHT / 2 - CROSSHAIR_LENGTH, CROSSHAIR_LENGTH * 2, CROSSHAIR_LENGTH * 2, 90, 360 * player.getReload() / 1000);
-				} else {
+				} else if (!player.getClickedRight()) {
 					// draw crosshair
 					g.setColor(Color.WHITE);
 					g.drawLine(SCREEN_WIDTH / 2 - CROSSHAIR_LENGTH, SCREEN_HEIGHT / 2, SCREEN_WIDTH / 2 + CROSSHAIR_LENGTH, SCREEN_HEIGHT / 2);

@@ -15,8 +15,12 @@ import java.util.ArrayList;
 
 import javax.swing.JOptionPane;
 
+import data_structures.SimpleLinkedList;
 import player.Player;
-import player.builds.*;
+import player.builds.Assassin;
+import player.builds.Guard;
+import player.builds.Sniper;
+import player.builds.Soldier;
 
 public class Client {
 
@@ -26,7 +30,7 @@ public class Client {
 	private PrintWriter output;
 
 	private Player player;
-	private ArrayList<Player> players;
+	private SimpleLinkedList<Player> players;
 	private boolean running;
 	private String build;
 
@@ -41,14 +45,14 @@ public class Client {
 	 * ChatClient 
 	 * constructor
 	 */
-	public Client(String address, int port, String name) {
+	public Client(String address, int port, String name, int build) {
 		running = true;
 		//		this.address = address;
 		//		this.port = port;
 		this.name = name;
 
 		// get address and port and connect, then get username
-		players = new ArrayList<Player>();
+		players = new SimpleLinkedList<Player>();
 
 		//		address = "localhost"; // JOptionPane.showInputDialog("Enter IP Address:");
 		//		port = 5001; //Integer.parseInt(JOptionPane.showInputDialog("Enter port (enter a number or else the program will crash):"));
@@ -82,8 +86,6 @@ public class Client {
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
-
-		int build = 3; // temp
 		
 		if (build == 0) {
 			player = new Assassin(name);
@@ -119,7 +121,7 @@ public class Client {
 		return build;
 	}
 
-	public ArrayList<Player> getPlayers(){
+	public SimpleLinkedList<Player> getPlayers(){
 		return players;
 	}
 

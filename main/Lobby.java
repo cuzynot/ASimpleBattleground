@@ -9,7 +9,10 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 
+import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
@@ -32,6 +35,11 @@ public class Lobby {
 	// private Game game;
 
 	private BufferedImage image;
+	private static BufferedImage assassinIcon;
+	private static BufferedImage guardIcon;
+	private static BufferedImage sniperIcon;
+	private static BufferedImage soldierIcon;
+
 	private Player player;
 
 	private JFrame frame;
@@ -42,7 +50,10 @@ public class Lobby {
 	private Field name;
 	private Button enter;
 	private Button exit;
-	
+	private Button prevBuild;
+	private Button nextBuild;
+
+	private int curBuild;
 	private int curString;
 	private int counter;
 	private Color color;
@@ -61,15 +72,27 @@ public class Lobby {
 		SCREEN_WIDTH = (int)(Toolkit.getDefaultToolkit().getScreenSize().getWidth());
 		SCREEN_HEIGHT = (int)(Toolkit.getDefaultToolkit().getScreenSize().getHeight());
 		ROTATE_SPEED = 0.02;
-		ip = new Field(SCREEN_WIDTH / 3, SCREEN_HEIGHT / 2 - SCREEN_HEIGHT / 16, SCREEN_WIDTH * 2 / 3, SCREEN_HEIGHT / 2);
-		port = new Field(SCREEN_WIDTH / 3, SCREEN_HEIGHT / 2, SCREEN_WIDTH * 2 / 3, SCREEN_HEIGHT / 2 + SCREEN_HEIGHT / 16);
-		name = new Field(SCREEN_WIDTH / 3, SCREEN_HEIGHT / 2 + SCREEN_HEIGHT / 16, SCREEN_WIDTH * 2 / 3, SCREEN_HEIGHT / 2 + SCREEN_HEIGHT / 8);
-		enter = new Button(SCREEN_WIDTH / 2 - SCREEN_HEIGHT / 16, (int)(SCREEN_HEIGHT / 1.2) - SCREEN_HEIGHT / 32, SCREEN_WIDTH / 2 + SCREEN_HEIGHT / 16, (int)(SCREEN_HEIGHT / 1.2) + SCREEN_HEIGHT / 32, "ENTER");
+		ip = new Field(SCREEN_WIDTH / 3, SCREEN_HEIGHT * 7 / 16, SCREEN_WIDTH * 2 / 3, SCREEN_HEIGHT / 2);
+		port = new Field(SCREEN_WIDTH / 3, SCREEN_HEIGHT / 2, SCREEN_WIDTH * 2 / 3, SCREEN_HEIGHT * 9 / 16);
+		name = new Field(SCREEN_WIDTH / 3, SCREEN_HEIGHT * 9 / 16, SCREEN_WIDTH * 2 / 3, SCREEN_HEIGHT * 5 / 8);
+		enter = new Button(SCREEN_WIDTH * 7 / 16, (int)(SCREEN_HEIGHT / 1.2) - SCREEN_HEIGHT / 32, SCREEN_WIDTH * 9 / 16, (int)(SCREEN_HEIGHT / 1.2) + SCREEN_HEIGHT / 32, "ENTER");
 		exit = new Button(SCREEN_WIDTH - SCREEN_HEIGHT / 32, 0, SCREEN_WIDTH, SCREEN_HEIGHT / 32, "");
+		prevBuild = new Button(SCREEN_WIDTH * 7 / 9 - SCREEN_WIDTH / 100, SCREEN_HEIGHT * 3 / 5 - SCREEN_WIDTH / 100, SCREEN_WIDTH * 7 / 9 + SCREEN_WIDTH / 100, SCREEN_HEIGHT * 3 / 5 + SCREEN_WIDTH / 100, "<");
+		nextBuild = new Button(SCREEN_WIDTH * 8 / 9 - SCREEN_WIDTH / 100, SCREEN_HEIGHT * 3 / 5 - SCREEN_WIDTH / 100, SCREEN_WIDTH * 8 / 9 + SCREEN_WIDTH / 100, SCREEN_HEIGHT * 3 / 5 + SCREEN_WIDTH / 100, ">");
+		curBuild = 0;
 		curString = 0;
 		counter = 0;
 		color = new Color((int)(Math.random() * 255), (int)(Math.random() * 255), (int)(Math.random() * 255));
 		alt = new Color((int)(Math.random() * 255), (int)(Math.random() * 255), (int)(Math.random() * 255));
+
+		try {
+			assassinIcon = ImageIO.read(new File("res/assassinIcon.png"));
+			guardIcon = ImageIO.read(new File("res/guardIcon.png"));
+			sniperIcon = ImageIO.read(new File("res/sniperIcon.png"));
+			soldierIcon = ImageIO.read(new File("res/soldierIcon.png"));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 
 		int[][] map = {
 				{1, 1, 1, 1, 1},
@@ -81,7 +104,7 @@ public class Lobby {
 		player = new Soldier("null", 2.5, 2.5, 1, 0, 0, -1);
 		display = new Display(map, SCREEN_WIDTH, SCREEN_HEIGHT, color, player, null);
 		image = display.getImage();
-		
+
 		// make new panel
 		panel = new LobbyPanel();
 
@@ -130,10 +153,10 @@ public class Lobby {
 		player.setXPlane(xPlane);
 		player.setYPlane(yPlane);
 	}
-	
+
 	private void enterGame() {
 		System.out.println("connecting to " + ip.getString() + " " + port.getString() + " " + name.getString());
-		client = new Client(ip.getString(), Integer.parseInt(port.getString()), name.getString());
+		client = new Client(ip.getString(), Integer.parseInt(port.getString()), name.getString(), curBuild);
 		//				client = new Client("localhost", 5001, "asdfoaj");
 		frame.dispose();
 		Thread t = new Thread(new Runnable() {
@@ -206,6 +229,16 @@ public class Lobby {
 			} else if (name.clicked(x, y)) {
 				counter = 0;
 				curString = 2;
+			} else if (prevBuild.clicked(x, y)) {
+				curBuild--;
+				if (curBuild < 0) {
+					curBuild = 3;
+				}
+			} else if (nextBuild.clicked(x, y)) {
+				curBuild++;
+				if (curBuild > 3) {
+					curBuild = 0;
+				}
 			} else if (enter.clicked(x, y)) {
 				enterGame();
 			} else if (exit.clicked(x, y)) {
@@ -272,13 +305,13 @@ public class Lobby {
 			g.setColor(alt);
 			g.setFont(fields);
 			g.drawString(enter.getString(), enter.getX1(), enter.getY2() - OFFSET);
-			
+
 			// draw the exit button
 			g.setColor(alt);
-			g.fillRect(exit.getX1(), exit.getY1(), exit.getX2() - exit.getX1(),  exit.getY2() - exit.getY1());
+			g.fillRect(exit.getX1(), exit.getY1(), exit.getX2() - exit.getX1(), exit.getY2() - exit.getY1());
 			g.setColor(color);
-			g.drawLine(exit.getX1(), exit.getY1(), exit.getX2(),  exit.getY2());
-			g.drawLine(exit.getX2(), exit.getY1(), exit.getX1(),  exit.getY2());
+			g.drawLine(exit.getX1(), exit.getY1(), exit.getX2(), exit.getY2());
+			g.drawLine(exit.getX2(), exit.getY1(), exit.getX1(), exit.getY2());
 
 			// draw the ip, port and name strings
 			g.setColor(alt);
@@ -287,11 +320,35 @@ public class Lobby {
 			} else if (curString == 1) {
 				g.drawString("port number:", SCREEN_WIDTH / 10, portStringY);
 			} else if (curString == 2) {
-				g.drawString("   username:", SCREEN_WIDTH / 10, nameStringY);
+				g.drawString("  username:", SCREEN_WIDTH / 10, nameStringY);
 			}
 			g.drawString(ip.getString(), ip.getX1(), ipStringY);
 			g.drawString(port.getString(), port.getX1(), portStringY);
 			g.drawString(name.getString(), name.getX1(), nameStringY);
+
+			// draw the builds
+			g.setColor(Color.WHITE);
+			g.setFont(fields);
+			g.drawString(prevBuild.getString(), prevBuild.getX1(), prevBuild.getY2() - OFFSET);
+			g.drawString(nextBuild.getString(), nextBuild.getX1(), nextBuild.getY2() - OFFSET);
+
+			g.setColor(alt);
+			if (curBuild == 0) {
+				g.drawImage(assassinIcon, SCREEN_WIDTH * 39 / 50, SCREEN_HEIGHT * 3 / 7, SCREEN_WIDTH / 10, SCREEN_WIDTH / 10, null);
+				g.drawString("Assassin", SCREEN_WIDTH * 39 / 50, SCREEN_HEIGHT * 6 / 9);
+			} else if (curBuild == 1) {
+				g.drawImage(guardIcon, SCREEN_WIDTH * 39 / 50, SCREEN_HEIGHT * 3 / 7, SCREEN_WIDTH / 10, SCREEN_WIDTH / 10, null);
+				g.drawString("  Guard ", SCREEN_WIDTH * 39 / 50, SCREEN_HEIGHT * 6 / 9);
+			} else if (curBuild == 2) {
+				g.drawImage(sniperIcon, SCREEN_WIDTH * 39 / 50, SCREEN_HEIGHT * 3 / 7, SCREEN_WIDTH / 10, SCREEN_WIDTH / 10, null);
+				g.drawString("  Sniper", SCREEN_WIDTH * 39 / 50, SCREEN_HEIGHT * 6 / 9);
+			} else if (curBuild == 3) {
+				g.drawImage(soldierIcon, SCREEN_WIDTH * 39 / 50, SCREEN_HEIGHT * 3 / 7, SCREEN_WIDTH / 10, SCREEN_WIDTH / 10, null);
+				g.drawString(" Soldier", SCREEN_WIDTH * 39 / 50, SCREEN_HEIGHT * 6 / 9);
+			}
+
+			//			g.drawRect(prevBuild.getX1(), prevBuild.getY1(), prevBuild.getX2() - prevBuild.getX1(), prevBuild.getY2() - prevBuild.getY1());
+			//			g.drawRect(nextBuild.getX1(), nextBuild.getY1(), nextBuild.getX2() - nextBuild.getX1(), nextBuild.getY2() - nextBuild.getY1());
 
 			// draw logo
 			g.setColor(alt);
