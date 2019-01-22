@@ -77,13 +77,13 @@ public class Display extends JPanel {
 		nextBuild = new Button(SCREEN_WIDTH * 4 / 7 - SCREEN_WIDTH / 100, SCREEN_HEIGHT * 58 / 100 - SCREEN_WIDTH / 100, SCREEN_WIDTH * 4 / 7 + SCREEN_WIDTH / 100, SCREEN_HEIGHT * 58 / 100 + SCREEN_WIDTH / 100, ">");
 		logo = new Font("Helvetica", Font.BOLD | Font.ITALIC, SCREEN_WIDTH / 15);
 		OFFSET = 10;
-		if (player instanceof Assassin) {
+		if (player.getBuild() instanceof Assassin) {
 			curBuild = 0;
-		} else if (player instanceof Guard) {
+		} else if (player.getBuild() instanceof Guard) {
 			curBuild = 1;
-		} else if (player instanceof Sniper) {
+		} else if (player.getBuild() instanceof Sniper) {
 			curBuild = 2;
-		} else if (player instanceof Soldier) {
+		} else if (player.getBuild() instanceof Soldier) {
 			curBuild = 3;
 		}
 
@@ -114,13 +114,13 @@ public class Display extends JPanel {
 	public void paintComponent(Graphics g) {
 		if (player.inGame()) {
 			// if the player is respawning
-			if (player.getHealth() > 0 && player.getRespawn() <= 0) {
+			if (player.getBuild().getHealth() > 0 && player.getRespawn() <= 0) {
 				update();
 
 				// draw the background image
 				if (player.getClickedRight()) { // if the player is scoped in
-					int zoomW = (int)(image.getWidth() * player.getZoom());
-					int zoomH = (int)(image.getHeight() * player.getZoom());
+					int zoomW = (int)(image.getWidth() * player.getBuild().getZoom());
+					int zoomH = (int)(image.getHeight() * player.getBuild().getZoom());
 					BufferedImage sub = image.getSubimage(zoomW, zoomH, image.getWidth() - zoomW * 2, image.getHeight() - zoomH * 2);
 					g.drawImage(sub, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, null);
 				} else {
@@ -129,30 +129,30 @@ public class Display extends JPanel {
 
 				// draw weapon or scoped weapon
 				if (player.getClickedRight()) {
-					if (player instanceof Assassin) {
+					if (player.getBuild() instanceof Assassin) {
 						g.drawImage(assassinScope, SCREEN_WIDTH / 2 - SCREEN_WIDTH / 8, SCREEN_HEIGHT / 2, SCREEN_WIDTH / 4, SCREEN_HEIGHT / 2, null);
-					} else if (player instanceof Guard) {
+					} else if (player.getBuild() instanceof Guard) {
 						g.drawImage(guardScope, SCREEN_WIDTH / 2 - SCREEN_WIDTH / 8, SCREEN_HEIGHT / 2, SCREEN_WIDTH / 4, SCREEN_HEIGHT / 2, null);
-					} else if (player instanceof Sniper) {
+					} else if (player.getBuild() instanceof Sniper) {
 						g.drawImage(sniperScope, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, null);
-					} else if (player instanceof Soldier) {
+					} else if (player.getBuild() instanceof Soldier) {
 						g.drawImage(soldierScope, SCREEN_WIDTH / 2 - SCREEN_WIDTH / 8, SCREEN_HEIGHT / 2, SCREEN_WIDTH / 4, SCREEN_HEIGHT / 2, null);
 					}
 				} else {
-					if (player instanceof Assassin) {
+					if (player.getBuild() instanceof Assassin) {
 						g.drawImage(assassinWeapon, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, null);
-					} else if (player instanceof Guard) {
+					} else if (player.getBuild() instanceof Guard) {
 						g.drawImage(guardWeapon, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, null);
-					} else if (player instanceof Sniper) {
+					} else if (player.getBuild() instanceof Sniper) {
 						g.drawImage(sniperWeapon, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, null);
-					} else if (player instanceof Soldier) {
+					} else if (player.getBuild() instanceof Soldier) {
 						g.drawImage(soldierWeapon, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, null);
 					}
 				}
 
 				// draw health
 				g.setColor(Color.GREEN);
-				g.fillRect(0, SCREEN_HEIGHT * 19 / 20, (int)(player.getHealth() * SCREEN_WIDTH / player.getMaxHealth()), SCREEN_HEIGHT / 20);
+				g.fillRect(0, SCREEN_HEIGHT * 19 / 20, (int)(player.getBuild().getHealth() * SCREEN_WIDTH / player.getBuild().getMaxHealth()), SCREEN_HEIGHT / 20);
 
 				g.setColor(Color.WHITE);
 				if (player.getReload() > 0) {
@@ -168,7 +168,7 @@ public class Display extends JPanel {
 				// draw ammo count
 				g.setFont(font);
 				g.setColor(Color.WHITE);
-				g.drawString(player.getAmmo() + "/" + player.getMaxAmmo(), SCREEN_WIDTH - SCREEN_WIDTH / 20, SCREEN_HEIGHT - SCREEN_WIDTH / 20);
+				g.drawString(player.getBuild().getAmmo() + "/" + player.getBuild().getMaxAmmo(), SCREEN_WIDTH - SCREEN_WIDTH / 20, SCREEN_HEIGHT - SCREEN_WIDTH / 20);
 
 				// draw players list
 				g.setFont(font);
@@ -177,17 +177,28 @@ public class Display extends JPanel {
 					g.drawString(player.getName(), SCREEN_WIDTH * 3 / 4, SCREEN_HEIGHT / 20);
 					g.drawString(Integer.toString(player.getScore()), SCREEN_WIDTH * 15 / 16, SCREEN_HEIGHT / 20);
 					for (int i = 0; i < players.size(); i++) {
+						// draw players' names and their respective scores
 						g.drawString(players.get(i).getName(), SCREEN_WIDTH * 3 / 4, SCREEN_HEIGHT / 20 * (i + 2));
 						g.drawString(Integer.toString(players.get(i).getScore()), SCREEN_WIDTH * 15 / 16, SCREEN_HEIGHT / 20 * (i + 2));
 					}
 				}
 
-				// draw players' scores
 			} else {
+				// draw background
 				g.setColor(Color.BLACK);
 				g.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+				
+				// draw respawn buffer
 				g.setColor(Color.WHITE);
 				g.fillArc(SCREEN_WIDTH / 2 - CROSSHAIR_LENGTH, SCREEN_HEIGHT / 2 - CROSSHAIR_LENGTH, CROSSHAIR_LENGTH * 2, CROSSHAIR_LENGTH * 2, 90, 360 * player.getRespawn() / 3000);
+				
+				// draw elimination message
+				g.setColor(Color.WHITE);
+				g.setFont(logo);
+				g.drawString("ELIMINATED BY", 0, SCREEN_HEIGHT / 3);
+				g.setColor(color);
+				g.setFont(font);
+				g.drawString(player.getEliminator(), 0, SCREEN_HEIGHT * 2 / 3);
 			}
 		} else {
 			g.setColor(Color.WHITE);

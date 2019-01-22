@@ -7,7 +7,6 @@ package main;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
-import java.awt.Panel;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.BufferedReader;
@@ -19,17 +18,15 @@ import java.net.Socket;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-import javax.swing.JTextField;
 
 import data_structures.SimpleLinkedList;
 import data_structures.SimpleQueue;
 import graphics.Field;
-import player.Player;
 
 public class Server {
 
 	private ServerSocket serverSocket; // server socket for connection
-	private static Boolean running;  // controls if the server is accepting clients
+	private boolean running;  // controls if the server is accepting clients
 
 	private SimpleLinkedList<ClientObject> clients; // list of clients
 

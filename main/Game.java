@@ -16,6 +16,10 @@ import data_structures.SimpleLinkedList;
 import graphics.Display;
 import player.Bullet;
 import player.Player;
+import player.builds.Assassin;
+import player.builds.Guard;
+import player.builds.Sniper;
+import player.builds.Soldier;
 
 public class Game extends JFrame {
 
@@ -30,7 +34,7 @@ public class Game extends JFrame {
 	private final int SCREEN_HEIGHT;
 
 	// map
-	private static int[][] map;
+	private int[][] map;
 
 	// cursors
 	private Cursor defaultCursor;
@@ -66,18 +70,19 @@ public class Game extends JFrame {
 		blankCursor = Toolkit.getDefaultToolkit().createCustomCursor(cursorImg, new Point(0, 0), "blank cursor");
 		toggleCursor(false);
 
-		// init JFrame
-
 		// make cursor blank
 		cursorShown = false;
 		toggleCursor(cursorShown);
 
+		// get player, players and map from client
 		player = client.getPlayer();
 		players = client.getPlayers();
 		map = client.getMap();
-
-		// init Screen
+		
+		// make new display
 		display = new Display(map, SCREEN_WIDTH, SCREEN_HEIGHT, color, player, players); // screen = new Screen(map, mapWidth, mapHeight, textures, 640, 480)
+
+		// init JFrame
 		add(display);
 		addKeyListener(new GameKeyListener());
 		addMouseListener(new GameMouseListener());
@@ -95,8 +100,7 @@ public class Game extends JFrame {
 			public void run() {
 				loop();
 			}
-		}
-				);
+		});
 		t.start();
 	}
 
@@ -108,17 +112,28 @@ public class Game extends JFrame {
 			x = (int)(Math.random() * map.length);
 			y = (int)(Math.random() * map[0].length);
 		}
+		
+		// reset player build
+		if (display.getCurBuild() == 0) {
+			player.setBuild(new Assassin());
+		} else if (display.getCurBuild() == 1) {
+			player.setBuild(new Guard());
+		} else if (display.getCurBuild() == 2) {
+			player.setBuild(new Sniper());
+		} else if (display.getCurBuild() == 3) {
+			player.setBuild(new Soldier());
+		}
 
+		// reset player values
 		player.setX(x);
 		player.setY(y);
 		player.setXDir(1);
 		player.setYDir(0);
 		player.setXPlane(0);
 		player.setYPlane(-1);
-		player.setHealth(player.getMaxHealth());
-		player.setAmmo(player.getMaxAmmo());
+		player.getBuild().setHealth(player.getBuild().getMaxHealth());
+		player.getBuild().setAmmo(player.getBuild().getMaxAmmo());
 		player.setReload(0);
-		// player = new Player(client.getName(), x, y, 1, 0, 0, -1, "sniper"); // temp
 	}
 
 	// private methods
@@ -152,11 +167,11 @@ public class Game extends JFrame {
 	}
 
 	private void playerStatus() {
-		if (player.getHealth() <= 0) {
+		if (player.getBuild().getHealth() <= 0) {
 			player.setRespawn(3000);
 			player.setX(-1);
 			player.setY(-1);
-			player.setHealth(player.getMaxHealth());
+			player.getBuild().setHealth(player.getBuild().getMaxHealth());
 		} else if (player.getRespawn() > 0) {
 			player.setRespawn(player.getRespawn() - DELAY);
 			if (player.getRespawn() <= 0) {
@@ -177,7 +192,7 @@ public class Game extends JFrame {
 		double y = player.getY();
 		double xDir = player.getXDir();
 		double yDir = player.getYDir();
-		double speed = player.getSpeed();
+		double speed = player.getBuild().getSpeed();
 		double rotation = player.getRotation();
 		double xPlane = player.getXPlane();
 		double yPlane = player.getYPlane();
@@ -236,7 +251,7 @@ public class Game extends JFrame {
 		if (player.getReload() > 0) {
 			player.setReload(player.getReload() - DELAY);
 			if (player.getReload() <= 0) {
-				player.setAmmo(player.getMaxAmmo());
+				player.getBuild().setAmmo(player.getBuild().getMaxAmmo());
 			}
 		}
 
@@ -261,7 +276,7 @@ public class Game extends JFrame {
 				boolean hit = false;
 				while (!hit && j < players.size()) {
 					if (bullet.collides(players.get(j))) {
-						client.println("hit " + players.get(j).getName() + " " + player.getDamage() + " " + player.getName());
+						client.println("hit " + players.get(j).getName() + " " + player.getBuild().getDamage() + " " + player.getName());
 						player.getBullets().remove(i);
 						i--;
 
@@ -287,11 +302,11 @@ public class Game extends JFrame {
 	}
 
 	private void mousePressed() {
-		if (player.getClickedLeft() && System.currentTimeMillis() - player.getLastFired() > player.getFireRate() && player.getReload() <= 0) {
+		if (player.getClickedLeft() && System.currentTimeMillis() - player.getLastFired() > player.getBuild().getFireRate() && player.getReload() <= 0) {
 			Bullet bullet = new Bullet(player.getX(), player.getY(), player.getXDir(), player.getYDir());
 			player.getBullets().add(bullet);
-			player.setAmmo(player.getAmmo() - 1);
-			if (player.getAmmo() <= 0) {
+			player.getBuild().setAmmo(player.getBuild().getAmmo() - 1);
+			if (player.getBuild().getAmmo() <= 0) {
 				player.setReload(1000);
 			}
 			player.setLastFired(System.currentTimeMillis());
@@ -330,28 +345,6 @@ public class Game extends JFrame {
 						} else {
 							display.setCurBuild(0);
 						}
-					}
-					
-					// SET PLAYER BUILD WHEN RESPAWN
-					// SET PLAYER BUILD WHEN RESPAWN
-					// SET PLAYER BUILD WHEN RESPAWN
-					// SET PLAYER BUILD WHEN RESPAWN
-					// SET PLAYER BUILD WHEN RESPAWN
-					// SET PLAYER BUILD WHEN RESPAWN
-					// SET PLAYER BUILD WHEN RESPAWN
-					// SET PLAYER BUILD WHEN RESPAWN
-					// SET PLAYER BUILD WHEN RESPAWN
-					// SET PLAYER BUILD WHEN RESPAWN
-					// SET PLAYER BUILD WHEN RESPAWN
-					// SET PLAYER BUILD WHEN RESPAWN
-					// SET PLAYER BUILD WHEN RESPAWN
-					// SET PLAYER BUILD WHEN RESPAWN
-					// SET PLAYER BUILD WHEN RESPAWN
-					// SET PLAYER BUILD WHEN RESPAWN
-					// SET PLAYER BUILD WHEN RESPAWN
-					// SET PLAYER BUILD WHEN RESPAWN
-					if (display.getCurBuild() == 0) {
-						
 					}
 				}	
 			}
@@ -410,7 +403,7 @@ public class Game extends JFrame {
 					System.out.println(p.getName() + " xy " + p.getX() + " " + p.getY());
 				}
 			} else if (key == KeyEvent.VK_H) {
-				player.setHealth(player.getHealth() - 50);
+				player.getBuild().setHealth(player.getBuild().getHealth() - 50);
 			}
 		}
 

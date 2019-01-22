@@ -105,7 +105,7 @@ public class Lobby {
 				{1, 0, 0, 0, 1},
 				{1, 1, 1, 1, 1},
 		};
-		player = new Soldier("null", 2.5, 2.5, 1, 0, 0, -1);
+		player = new Player("null", 2.5, 2.5, 1, 0, 0, -1);
 		display = new Display(map, SCREEN_WIDTH, SCREEN_HEIGHT, color, player, null);
 		image = display.getImage();
 

@@ -3,6 +3,7 @@ import java.awt.AWTException;
 import java.awt.Robot;
 
 import data_structures.SimpleLinkedList;
+import player.builds.Build;
 
 public class Player implements Moveable{
 
@@ -18,20 +19,22 @@ public class Player implements Moveable{
 	private double xPlane, yPlane; // farthest edge of the cinGamera's view
 	private double rotation; // player cinGamera rotation
 	
+	private Build build;
+//	private int ammo;
+//	protected int maxAmmo;
+//	private double health;
+//	protected double maxHealth;
+//	protected double damage;
+//	protected double speed;
+//	protected double fireRate;
+//	protected double zoom;
+
 	private int score;
 	private String name;
 	private Robot robot;
 	private SimpleLinkedList<Bullet> bullets;
 	private long lastFired;
-	
-	protected int ammo;
-	protected int maxAmmo;
-	protected double health;
-	protected double maxHealth;
-	protected double damage;
-	protected double speed;
-	protected double fireRate;
-	protected double zoom;
+	private String eliminator;
 
 	// conStringuctor
 	public Player(String name, double x, double y, double xd, double yd, double xp, double yp){
@@ -47,6 +50,7 @@ public class Player implements Moveable{
 		this.bullets = new SimpleLinkedList<Bullet>();
 		this.reload = 0;
 		this.respawn = 0;
+		this.eliminator = "";
 
 		try {
 			robot = new Robot();
@@ -62,6 +66,7 @@ public class Player implements Moveable{
 		this.bullets = new SimpleLinkedList<Bullet>();
 		this.reload = 0;
 		this.respawn = 0;
+		this.eliminator = "";
 
 		try {
 			robot = new Robot();
@@ -111,17 +116,17 @@ public class Player implements Moveable{
 		return score;
 	}
 
-	public int getAmmo() {
-		return ammo;
-	}
+//	public int getAmmo() {
+//		return build.getAmmo();
+//	}
 	
 	public long getLastFired() {
 		return lastFired;
 	}
 	
-	public int getMaxAmmo() {
-		return maxAmmo;
-	}
+//	public int getMaxAmmo() {
+//		return build.getMaxAmmo();
+//	}
 
 	public double getRotation() {
 		return rotation;
@@ -151,29 +156,29 @@ public class Player implements Moveable{
 		return yPlane;
 	}
 
-	public double getHealth() {
-		return health;
-	}
-	
-	public double getMaxHealth() {
-		return maxHealth;
-	}
-	
-	public double getDamage() {
-		return damage;
-	}
-	
-	public double getSpeed() {
-		return speed;
-	}
-	
-	public double getFireRate() {
-		return fireRate;
-	}
-	
-	public double getZoom() {
-		return zoom;
-	}
+//	public double getHealth() {
+//		return build.getHealth();
+//	}
+//	
+//	public double getMaxHealth() {
+//		return build.getMaxHealth();
+//	}
+//	
+//	public double getDamage() {
+//		return build.getDamage();
+//	}
+//	
+//	public double getSpeed() {
+//		return build.getSpeed();
+//	}
+//	
+//	public double getFireRate() {
+//		return build.getFireRate();
+//	}
+//	
+//	public double getZoom() {
+//		return build.getZoom();
+//	}
 	
 	public Robot getRobot() {
 		return robot;
@@ -182,11 +187,19 @@ public class Player implements Moveable{
 	public String getName() {
 		return name;
 	}
+	
+	public String getEliminator() {
+		return eliminator;
+	}
 
 	public SimpleLinkedList<Bullet> getBullets(){
 		return bullets;
 	}
-
+	
+	public Build getBuild() {
+		return build;
+	}
+	
 	// setters
 	public void setClickedLeft(boolean clickedLeft) {
 		this.clickedLeft = clickedLeft;
@@ -228,9 +241,9 @@ public class Player implements Moveable{
 		this.score = score;
 	}
 
-	public void setAmmo(int ammo) {
-		this.ammo = ammo;
-	}
+//	public void setAmmo(int ammo) {
+//		this.build.setAmmo(ammo);
+//	}
 	
 	public void setLastFired(long lastFired) {
 		this.lastFired = lastFired;
@@ -264,8 +277,15 @@ public class Player implements Moveable{
 		this.rotation = rotation;
 	}
 
-	public void setHealth(double health) {
-		this.health = health;
-	}
+//	public void setHealth(double health) {
+//		this.build.setHealth(health);
+//	}
 
+	public void setEliminator(String eliminator) {
+		this.eliminator = eliminator;
+	}
+	
+	public void setBuild(Build build) {
+		this.build = build;
+	}
 }

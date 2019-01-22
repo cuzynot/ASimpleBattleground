@@ -33,7 +33,7 @@ public class Client {
 	private String build;
 
 	private int mapSize;
-	private static int[][] map;
+	private int[][] map;
 
 	//	private String address;
 	//	private int port;
@@ -73,15 +73,16 @@ public class Client {
 			throw new DuplicateException();
 		}
 
+		player = new Player(name);
 		// System.out.println("reach builds");
 		if (build == 0) {
-			player = new Assassin(name);
+			player.setBuild(new Assassin());
 		} else if (build == 1) {
-			player = new Guard(name);
+			player.setBuild(new Guard());
 		} else if (build == 2) {
-			player = new Sniper(name);
+			player.setBuild(new Sniper());
 		} else if (build == 3) {
-			player = new Soldier(name);
+			player.setBuild(new Soldier());
 		}
 
 		// start communication with server
@@ -232,10 +233,10 @@ public class Client {
 								}
 							} else if (command.equals("hit")) {
 								double damage = Double.parseDouble(arr[2]);
-								player.setHealth(player.getHealth() - damage);
+								player.getBuild().setHealth(player.getBuild().getHealth() - damage);
 
 								// if the player is killed from this shot
-								if (player.getHealth() + damage > 0 && player.getHealth() <= 0) {
+								if (player.getBuild().getHealth() + damage > 0 && player.getBuild().getHealth() <= 0) {
 									String killer = arr[3];
 									
 									int newScore = 0;
@@ -255,6 +256,7 @@ public class Client {
 
 									// decrement player score
 									player.setScore(player.getScore() - DIE_CREDIT);
+									player.setEliminator(killer);
 								}
 							}
 						}

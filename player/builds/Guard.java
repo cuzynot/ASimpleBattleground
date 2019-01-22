@@ -1,20 +1,9 @@
 package player.builds;
-import player.Player;
 
-public class Guard extends Player {
-	
+public class Guard extends Build {
+
 	// constructor
-	public Guard(String name, double x, double y, double xd, double yd, double xp, double yp) {
-		super(name, x, y, xd, yd, xp, yp);
-		init();
-	}
-	
-	public Guard(String name) {
-		super(name);
-		init();
-	}
-	
-	private void init() {
+	public Guard() {
 		this.maxHealth = 4700;
 		this.health = maxHealth;
 		this.speed = 0.05;

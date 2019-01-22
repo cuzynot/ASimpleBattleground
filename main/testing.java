@@ -61,6 +61,7 @@ public class testing {
 	private class Panel extends JPanel {
 
 		private Font font;
+		private Font logo;
 		private Button exit;
 		private Button prevBuild;
 		private Button nextBuild;
@@ -68,6 +69,7 @@ public class testing {
 		private BufferedImage assassinIcon;
 		private int SCREEN_WIDTH;
 		private int SCREEN_HEIGHT;
+		private int CROSSHAIR_LENGTH;
 		private Color color = Color.RED;
 
 		// constructor
@@ -75,8 +77,12 @@ public class testing {
 
 			SCREEN_WIDTH = (int)(Toolkit.getDefaultToolkit().getScreenSize().getWidth());
 			SCREEN_HEIGHT = (int)(Toolkit.getDefaultToolkit().getScreenSize().getHeight());
+			
+			CROSSHAIR_LENGTH = SCREEN_WIDTH / 50;
 
 			font = new Font("Lora", Font.PLAIN, SCREEN_WIDTH / 50);
+			logo = new Font("Helvetica", Font.BOLD | Font.ITALIC, SCREEN_WIDTH / 15);
+
 			//quit = new Button(SCREEN_WIDTH / 2 - SCREEN_HEIGHT / 16, SCREEN_HEIGHT / 2 - SCREEN_HEIGHT / 32, SCREEN_WIDTH / 2 + SCREEN_HEIGHT / 16, SCREEN_HEIGHT / 2 + SCREEN_HEIGHT / 32, "QUIT");
 			exit = new Button(SCREEN_WIDTH - SCREEN_HEIGHT / 32, 0, SCREEN_WIDTH, SCREEN_HEIGHT / 32, "");
 			prevBuild = new Button(SCREEN_WIDTH * 3 / 7 - SCREEN_WIDTH / 100, SCREEN_HEIGHT * 58 / 100 - SCREEN_WIDTH / 100, SCREEN_WIDTH * 3 / 7 + SCREEN_WIDTH / 100, SCREEN_HEIGHT * 58 / 100 + SCREEN_WIDTH / 100, "<");
@@ -90,30 +96,21 @@ public class testing {
 		}
 
 		public void paintComponent(Graphics g) {
-//			g.setColor(Color.WHITE);
-//			g.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-
-			// draw exit button
-			g.setColor(color);
-			g.fillRect(exit.getX1(), exit.getY1(), exit.getX2() - exit.getX1(), exit.getY2() - exit.getY1());
+			// draw background
+			g.setColor(Color.BLACK);
+			g.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+			
+			// draw respawn buffer
 			g.setColor(Color.WHITE);
-			g.drawLine(exit.getX1(), exit.getY1(), exit.getX2(), exit.getY2());
-			g.drawLine(exit.getX2(), exit.getY1(), exit.getX1(), exit.getY2());
-
-			// draw builds
-			g.setColor(color);
+			g.fillArc(SCREEN_WIDTH / 2 - CROSSHAIR_LENGTH, SCREEN_HEIGHT / 2 - CROSSHAIR_LENGTH, CROSSHAIR_LENGTH * 2, CROSSHAIR_LENGTH * 2, 90, 360 * 2000 / 3000);
+			
+			// draw elimination message
+			g.setColor(Color.WHITE);
+			g.setFont(logo);
+			g.drawString("ELIMINATED BY", 0, SCREEN_HEIGHT / 3);
 			g.setFont(font);
-			g.drawString(prevBuild.getString(), prevBuild.getX1(), prevBuild.getY2() - 10);
-			g.drawString(nextBuild.getString(), nextBuild.getX1(), nextBuild.getY2() - 10);
-
-			// draw build icons
-			g.drawImage(assassinIcon, SCREEN_WIDTH * 9 / 20, SCREEN_HEIGHT / 2, SCREEN_WIDTH / 10, SCREEN_WIDTH / 10, null);
-			g.setColor(color);
-			g.setFont(font);
-
-			//g.drawString("Assassin", 0, 100);
-			g.drawString("Assassin", SCREEN_WIDTH * 23 / 50, SCREEN_HEIGHT * 7 / 10);
-
+			g.drawString("sampleelim", 0, SCREEN_HEIGHT * 2 / 3);
+			
 			repaint();
 		}
 	}

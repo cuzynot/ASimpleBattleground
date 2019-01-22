@@ -1,20 +1,9 @@
 package player.builds;
-import player.Player;
 
-public class Sniper extends Player {
-	
+public class Sniper extends Build {
+
 	// constructor
-	public Sniper(String name, double x, double y, double xd, double yd, double xp, double yp) {
-		super(name, x, y, xd, yd, xp, yp);
-		init();
-	}
-	
-	public Sniper(String name) {
-		super(name);
-		init();
-	}
-	
-	private void init() {
+	public Sniper() {
 		this.maxHealth = 2100;
 		this.health = maxHealth;
 		this.speed = 0.055;

@@ -1,21 +1,9 @@
 package player.builds;
-import player.Player;
 
-public class Assassin extends Player {
-	
+public class Assassin extends Build {
+
 	// constructor
-	public Assassin(String name, double x, double y, double xd, double yd, double xp, double yp) {
-		super(name, x, y, xd, yd, xp, yp);
-		init();
-		// this.name = "Assassin";
-	}
-	
-	public Assassin(String name) {
-		super(name);
-		init();
-	}
-	
-	private void init() {
+	public Assassin() {
 		this.maxHealth = 1900;
 		this.health = maxHealth;
 		this.speed = 0.085;
