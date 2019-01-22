@@ -130,13 +130,13 @@ public class Display extends JPanel {
 				// draw weapon or scoped weapon
 				if (player.getClickedRight()) {
 					if (player.getBuild() instanceof Assassin) {
-						g.drawImage(assassinScope, SCREEN_WIDTH / 2 - SCREEN_WIDTH / 8, SCREEN_HEIGHT / 2, SCREEN_WIDTH / 4, SCREEN_HEIGHT / 2, null);
+						g.drawImage(assassinScope, SCREEN_WIDTH / 4, SCREEN_HEIGHT / 2, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, null);
 					} else if (player.getBuild() instanceof Guard) {
-						g.drawImage(guardScope, SCREEN_WIDTH / 2 - SCREEN_WIDTH / 8, SCREEN_HEIGHT / 2, SCREEN_WIDTH / 4, SCREEN_HEIGHT / 2, null);
+						g.drawImage(guardScope, SCREEN_WIDTH * 3 / 8, SCREEN_HEIGHT / 2, SCREEN_WIDTH / 4, SCREEN_HEIGHT / 2, null);
 					} else if (player.getBuild() instanceof Sniper) {
-						g.drawImage(sniperScope, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, null);
+						g.drawImage(sniperScope, 0, SCREEN_HEIGHT / 20, SCREEN_WIDTH, SCREEN_HEIGHT * 19 / 20, null);
 					} else if (player.getBuild() instanceof Soldier) {
-						g.drawImage(soldierScope, SCREEN_WIDTH / 2 - SCREEN_WIDTH / 8, SCREEN_HEIGHT / 2, SCREEN_WIDTH / 4, SCREEN_HEIGHT / 2, null);
+						g.drawImage(soldierScope, SCREEN_WIDTH * 3 / 8, SCREEN_HEIGHT / 2, SCREEN_WIDTH / 4, SCREEN_HEIGHT / 2, null);
 					}
 				} else {
 					if (player.getBuild() instanceof Assassin) {
@@ -144,9 +144,9 @@ public class Display extends JPanel {
 					} else if (player.getBuild() instanceof Guard) {
 						g.drawImage(guardWeapon, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, null);
 					} else if (player.getBuild() instanceof Sniper) {
-						g.drawImage(sniperWeapon, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, null);
+						g.drawImage(sniperWeapon, SCREEN_WIDTH * 3 / 7, SCREEN_HEIGHT / 2, SCREEN_WIDTH * 4 / 7, SCREEN_HEIGHT / 2, null);
 					} else if (player.getBuild() instanceof Soldier) {
-						g.drawImage(soldierWeapon, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, null);
+						g.drawImage(soldierWeapon, SCREEN_WIDTH * 3 / 7, SCREEN_HEIGHT / 2, SCREEN_WIDTH * 4 / 7, SCREEN_HEIGHT / 2, null);
 					}
 				}
 

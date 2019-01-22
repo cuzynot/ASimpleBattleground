@@ -66,18 +66,49 @@ public class testing {
 		private Button prevBuild;
 		private Button nextBuild;
 		// images
-		private BufferedImage assassinIcon;
 		private int SCREEN_WIDTH;
 		private int SCREEN_HEIGHT;
 		private int CROSSHAIR_LENGTH;
 		private Color color = Color.RED;
 
+		private BufferedImage image;
+		private BufferedImage assassinWeapon;
+		private BufferedImage guardWeapon;
+		private BufferedImage sniperWeapon;
+		private BufferedImage soldierWeapon;
+		private BufferedImage assassinScope;
+		private BufferedImage guardScope;
+		private BufferedImage sniperScope;
+		private BufferedImage soldierScope;
+		private BufferedImage assassinIcon;
+		private BufferedImage guardIcon;
+		private BufferedImage sniperIcon;
+		private BufferedImage soldierIcon;
+		private int[] pixels;
+
 		// constructor
 		public Panel() {
 
+			try {
+				assassinWeapon = ImageIO.read(new File("res/assassinWeapon.png"));
+				guardWeapon = ImageIO.read(new File("res/guardWeapon.png"));
+				sniperWeapon = ImageIO.read(new File("res/sniperWeapon.png"));
+				soldierWeapon = ImageIO.read(new File("res/soldierWeapon.png"));
+				assassinScope = ImageIO.read(new File("res/assassinScope.png"));
+				guardScope = ImageIO.read(new File("res/guardScope.png"));
+				sniperScope = ImageIO.read(new File("res/sniperScope.png"));
+				soldierScope = ImageIO.read(new File("res/soldierScope.png"));
+				assassinIcon = ImageIO.read(new File("res/assassinIcon.png"));
+				guardIcon = ImageIO.read(new File("res/guardIcon.png"));
+				sniperIcon = ImageIO.read(new File("res/sniperIcon.png"));
+				soldierIcon = ImageIO.read(new File("res/soldierIcon.png"));
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+
 			SCREEN_WIDTH = (int)(Toolkit.getDefaultToolkit().getScreenSize().getWidth());
 			SCREEN_HEIGHT = (int)(Toolkit.getDefaultToolkit().getScreenSize().getHeight());
-			
+
 			CROSSHAIR_LENGTH = SCREEN_WIDTH / 50;
 
 			font = new Font("Lora", Font.PLAIN, SCREEN_WIDTH / 50);
@@ -96,21 +127,14 @@ public class testing {
 		}
 
 		public void paintComponent(Graphics g) {
-			// draw background
-			g.setColor(Color.BLACK);
-			g.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-			
-			// draw respawn buffer
+			g.drawImage(soldierScope, SCREEN_WIDTH / 2 - SCREEN_WIDTH / 8, SCREEN_HEIGHT / 2, SCREEN_WIDTH / 4, SCREEN_HEIGHT / 2, null);
+			//			g.drawImage(soldierWeapon, SCREEN_WIDTH * 3 / 7, SCREEN_HEIGHT / 2, SCREEN_WIDTH * 4 / 7, SCREEN_HEIGHT / 2, null);
+
+
+			// draw crosshair
 			g.setColor(Color.WHITE);
-			g.fillArc(SCREEN_WIDTH / 2 - CROSSHAIR_LENGTH, SCREEN_HEIGHT / 2 - CROSSHAIR_LENGTH, CROSSHAIR_LENGTH * 2, CROSSHAIR_LENGTH * 2, 90, 360 * 2000 / 3000);
-			
-			// draw elimination message
-			g.setColor(Color.WHITE);
-			g.setFont(logo);
-			g.drawString("ELIMINATED BY", 0, SCREEN_HEIGHT / 3);
-			g.setFont(font);
-			g.drawString("sampleelim", 0, SCREEN_HEIGHT * 2 / 3);
-			
+			g.drawLine(SCREEN_WIDTH / 2 - CROSSHAIR_LENGTH, SCREEN_HEIGHT / 2, SCREEN_WIDTH / 2 + CROSSHAIR_LENGTH, SCREEN_HEIGHT / 2);
+			g.drawLine(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 - CROSSHAIR_LENGTH, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 + CROSSHAIR_LENGTH);
 			repaint();
 		}
 	}
