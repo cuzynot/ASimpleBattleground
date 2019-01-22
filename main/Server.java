@@ -1,8 +1,11 @@
-package main;
-/** [ChatServer.java]
- * Server class
- * @author Yili
+/**
+ * [Server].java
+ * Server inits a server class
+ * to handle clients
+ * @author      Yili Liu
+ * @since       Dec.18.2018
  */
+package main;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -25,29 +28,37 @@ import graphics.Field;
 
 public class Server {
 
+	// init vars
 	private ServerSocket serverSocket; // server socket for connection
 	private boolean running;  // controls if the server is accepting clients
 
 	private SimpleLinkedList<ClientObject> clients; // list of clients
 
+	// map info
 	private int mapSize;
 	private static int[][] map;
+	
+	// text field
 	private Field port;
 
-	/** Main
-	 * @param args parameters from command line
+	/** 
+	 * main
+	 * @param args, parameters from command line
 	 */
 	public static void main(String[] args) { 
 		new Server(); // start the server
 	}
 
-	/** init
+	/** 
+	 * Server
+	 * constructor
 	 * Makes a new frame for user to enter what port they wish their server to be on
 	 */
 	public Server() {
 		final int WIDTH = 750;
 		final int HEIGHT = 300;
 
+		// set var values
 		running = true;
 		clients = new SimpleLinkedList<ClientObject>(); // list of clients
 		mapSize = 10;
@@ -65,14 +76,15 @@ public class Server {
 		f.setVisible(true);
 	}
 
-	/** Go
-	 * Starts the server
+	/** 
+	 * go
+	 * initialize server
+	 * @param int port, port number of the server
 	 */
 	private void go(int port) {
 		randomizeMap();
 
 		Socket client = null; //hold the client connection
-
 		System.out.println("waiting for clients");
 
 		try {
@@ -104,6 +116,10 @@ public class Server {
 		}
 	}
 
+	/**
+	 * randomizeMap
+	 * this method randomizes map
+	 */
 	private void randomizeMap() {
 		// instantiate map
 		map = new int[mapSize][mapSize];
@@ -134,6 +150,7 @@ public class Server {
 					prevx = i;
 					prevy = j;
 				} else if (map[i][j] == 2) {
+					// make sure the whole map is connected
 					for (int k = prevx; k < i; k++) {
 						map[k][j] = 0;
 					}
@@ -149,6 +166,12 @@ public class Server {
 		}
 	}
 
+	/**
+	 * bfs
+	 * this method makes sure every cell in the map is connected
+	 * @param i, row of current cell
+	 * @param j, col of current cell
+	 */
 	private void bfs(int i, int j) {
 		SimpleQueue<Integer> queue = new SimpleQueue<Integer>();
 		queue.enqueue(i); // add x
@@ -188,20 +211,30 @@ public class Server {
 		}
 	}
 
-	/** printToAll
+	/** 
+	 * printToAll
 	 * Takes in username of client and message to send
 	 * and sends it to all active clients
+	 * @param name, name of the sender
+	 * @param msg, message to be sent
 	 */
-	private void printToAll(String username, String msg) {
+	private void printToAll(String name, String msg) {
 		for (int i = 0; i < clients.size(); i++) {
 			ClientObject cur = clients.get(i);
-			if (!cur.getUsername().equals(username)) {
+			if (!cur.getUsername().equals(name)) {
 				cur.getOutput().println(msg);
 				cur.getOutput().flush();
 			}
 		}
 	}
 
+	/** 
+	 * printToOne
+	 * Takes in username of client and message to send
+	 * and sends it to that client
+	 * @param name, name of the receiver
+	 * @param msg, message to be sent
+	 */
 	private void printToOne(String name, String msg) {
 		int i = 0;
 		boolean found = false;
@@ -216,8 +249,11 @@ public class Server {
 		}
 	}
 
-	/** delete
-	 * Takes in username of client and deletes it from list of active clients
+	/**
+	 * delete
+	 * this method deletes new user
+	 * and sends it to all active clients
+	 * @param user, name of client to be deleted
 	 */
 	private void delete(String user) {
 		for (int i = 0; i < clients.size(); i++) {
@@ -232,8 +268,11 @@ public class Server {
 		}
 	}
 
-	/** add
-	 * Takes in username of client and adds it to list of active clients
+	/**
+	 * add
+	 * this method tells all clients
+	 * to add a new user
+	 * @param user, new client to be added
 	 */
 	private void add(String user) {
 		for (int i = 0; i < clients.size(); i++) {
@@ -247,17 +286,19 @@ public class Server {
 
 	//***** Inner class - thread for client connection
 	private class ConnectionHandler implements Runnable { 
+		// init var
 		private ClientObject client;
+		
 		/** ConnectionHandler
 		 * Constructor
 		 * @param Client c, the client object containing its socket, input and output streams, username and status
 		 */    
 		ConnectionHandler(ClientObject c) { 
 			this.client = c;
-
 		} //end of constructor
 
-		/** run
+		/** 
+		 * run
 		 * This method gets client input, interprets it, and update it for all clients 
 		 */
 		public void run() {  
@@ -316,6 +357,7 @@ public class Server {
 
 			String s = port.getString();
 			if (key == KeyEvent.VK_BACK_SPACE) {
+				// truncate port number
 				if (s.length() > 0) {
 					port.setString(s.substring(0, s.length() - 1));
 				}
@@ -325,7 +367,7 @@ public class Server {
 				// start the server on port
 				go(port);
 			} else if (key != KeyEvent.VK_SPACE) {
-				// } else if ((key != KeyEvent.VK_SHIFT) && (key != KeyEvent.VK_CONTROL) && (key != KeyEvent.VK_ALT)) {
+				// append to port number
 				char c = e.getKeyChar();
 				if (s.length() < port.getMaxLength()) {
 					port.setString((s + c).toLowerCase());
@@ -345,12 +387,19 @@ public class Server {
 
 	//***** Inner class - Stores client information
 	private class ServerPanel extends JPanel {
+		// init vars
 		private final int WIDTH;
 		private final int HEIGHT;
 		private Color color;
 		private Color alt;
 		private Font font;
 
+		/**
+		 * ServerPanel
+		 * constructor
+		 * @param WIDTH, width of the display
+		 * @param HEIGHT, height of the display
+		 */
 		ServerPanel(int WIDTH, int HEIGHT) {
 			this.WIDTH = WIDTH;
 			this.HEIGHT = HEIGHT;
@@ -369,11 +418,12 @@ public class Server {
 			g.setColor(Color.WHITE);
 			g.fillRect(port.getX1(), port.getY1(), port.getX2() - port.getX1(), port.getY2() - port.getY1());
 
-			// draw strings
+			// draw string
 			g.setColor(alt);
 			g.setFont(font);
 			g.drawString("PORT:", 0, port.getY2());
 
+			// draws port number
 			g.setColor(Color.BLACK);
 			g.setFont(font);
 			g.drawString(port.getString(), port.getX1(), port.getY2());
@@ -384,6 +434,7 @@ public class Server {
 
 	//***** Inner class - Stores client information
 	private class ClientObject {
+		// init vars
 		private String username; // client username
 		private String status = ""; // user status
 		private int score;
@@ -394,7 +445,7 @@ public class Server {
 
 		/** Client
 		 * Constructor
-		 * @param Socket socket, used to establish connection to its client
+		 * @param socket, used to establish connection to its client
 		 */
 		ClientObject(Socket socket) {
 			this.client = socket;
@@ -412,8 +463,6 @@ public class Server {
 					// if there is a person with the same user name
 					if (username.equals(cur.getUsername())) {
 						// send "duplicate" to client so they can enter a new name
-						System.out.println("printed duplicate");
-
 						output.println("duplicate");
 						output.flush();
 
@@ -438,6 +487,7 @@ public class Server {
 				// update lists of active users for every client
 				add(username);
 
+				// print map info to client
 				output.println("map " + mapSize);
 				for (int i = 0; i < map.length; i++) {
 					String s = "";
@@ -455,7 +505,7 @@ public class Server {
 		
 		/** setScore
 		 * This method updates the score of a user
-		 * @param int score, new score of a user
+		 * @param score, new score of a user
 		 */
 		public void setScore(int score) {
 			this.score = score;
@@ -463,7 +513,7 @@ public class Server {
 
 		/** getStatus
 		 * This method retuns the status of a user
-		 * @return String status, current status of client
+		 * @return status, current status of client
 		 */
 		public String getStatus() {
 			return status;
@@ -471,7 +521,7 @@ public class Server {
 
 		/** getUsername
 		 * This method retuns the username of a user
-		 * @return String username, current username of client
+		 * @return username, current username of client
 		 */
 		public String getUsername() {
 			return username;
@@ -479,7 +529,7 @@ public class Server {
 		
 		/** getScore
 		 * This method retuns the score of a user
-		 * @return int username, current score of client
+		 * @return username, current score of client
 		 */
 		public int getScore() {
 			return score;
@@ -487,7 +537,7 @@ public class Server {
 
 		/** getOutput
 		 * This method retuns the output stream of a user
-		 * @return PrintWriter output, the output stream of client
+		 * @return output, the output stream of client
 		 */
 		public PrintWriter getOutput() {
 			return output;
@@ -495,7 +545,7 @@ public class Server {
 
 		/** getInput
 		 * This method retuns the input stream of a user
-		 * @return BufferedReader input, the input stream of client
+		 * @return input, the input stream of client
 		 */
 		public BufferedReader getInput() {
 			return input;
@@ -503,7 +553,7 @@ public class Server {
 
 		/** getSocket
 		 * This method retuns the client socket
-		 * @return Socket client, the socket of client
+		 * @return client, the socket of client
 		 */
 		public Socket getSocket() {
 			return client;

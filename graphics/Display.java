@@ -1,4 +1,12 @@
+/**
+ * [Display].java
+ * Display is a class where the rendering for
+ * game images happens
+ * @author      Yili Liu
+ * @since       Dec.18.2018
+ */
 package graphics;
+
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -19,15 +27,22 @@ import player.builds.Soldier;
 
 public class Display extends JPanel {
 
-	private int[][] map;
+	// init vars
+	// final values
 	private final int SCREEN_WIDTH, SCREEN_HEIGHT;
 	private final int CROSSHAIR_LENGTH;
+	private final int OFFSET;
 
+	// static final values
 	private static final int DARK_GRAY = Color.DARK_GRAY.getRGB();
 	private static final int GRAY = Color.GRAY.getRGB();
 	private static final int BLACK = Color.BLACK.getRGB();
 	private static final double PLAYER_WIDTH = 0.5;
 
+	// 2d array of the map
+	private int[][] map;
+
+	// colors, fonts, and buttons for the graphics
 	private Color color;
 	private int colorRGB;
 	private int darkerColorRGB;
@@ -36,9 +51,9 @@ public class Display extends JPanel {
 	private Button exit;
 	private Button prevBuild;
 	private Button nextBuild;
-	private int curBuild;
-	private final int OFFSET;
 
+	// player objects
+	private int curBuild;
 	private Player player;
 	private SimpleLinkedList<Player> players;
 
@@ -58,8 +73,18 @@ public class Display extends JPanel {
 	private static BufferedImage soldierIcon;
 	private int[] pixels;
 
-	// constructor
+	/**
+	 * Display 
+	 * constructor
+	 * @param map, the 2d array of the map
+	 * @param SCREEN_WIDTH, width of the screen
+	 * @param SCREEN_HEIGHT, height of the screen
+	 * @param color, color of the walls
+	 * @param player, local player
+	 * @param players, list of players from client
+	 */
 	public Display(int[][] map, int SCREEN_WIDTH, int SCREEN_HEIGHT, Color color, Player player, SimpleLinkedList<Player> players) {
+		// set values
 		this.map = map;
 		this.SCREEN_WIDTH = SCREEN_WIDTH;
 		this.SCREEN_HEIGHT = SCREEN_HEIGHT;
@@ -69,14 +94,16 @@ public class Display extends JPanel {
 		this.colorRGB = color.getRGB();
 		this.darkerColorRGB = color.darker().getRGB();
 
+		// set values for graphical components
 		CROSSHAIR_LENGTH = SCREEN_WIDTH / 100;
 		font = new Font("Lora", Font.PLAIN, SCREEN_WIDTH / 50);
-		//quit = new Button(SCREEN_WIDTH / 2 - SCREEN_HEIGHT / 16, SCREEN_HEIGHT / 2 - SCREEN_HEIGHT / 32, SCREEN_WIDTH / 2 + SCREEN_HEIGHT / 16, SCREEN_HEIGHT / 2 + SCREEN_HEIGHT / 32, "QUIT");
 		exit = new Button(SCREEN_WIDTH - SCREEN_HEIGHT / 32, 0, SCREEN_WIDTH, SCREEN_HEIGHT / 32, "");
 		prevBuild = new Button(SCREEN_WIDTH * 3 / 7 - SCREEN_WIDTH / 100, SCREEN_HEIGHT * 58 / 100 - SCREEN_WIDTH / 100, SCREEN_WIDTH * 3 / 7 + SCREEN_WIDTH / 100, SCREEN_HEIGHT * 58 / 100 + SCREEN_WIDTH / 100, "<");
 		nextBuild = new Button(SCREEN_WIDTH * 4 / 7 - SCREEN_WIDTH / 100, SCREEN_HEIGHT * 58 / 100 - SCREEN_WIDTH / 100, SCREEN_WIDTH * 4 / 7 + SCREEN_WIDTH / 100, SCREEN_HEIGHT * 58 / 100 + SCREEN_WIDTH / 100, ">");
 		logo = new Font("Helvetica", Font.BOLD | Font.ITALIC, SCREEN_WIDTH / 15);
 		OFFSET = 10;
+
+		// set player build
 		if (player.getBuild() instanceof Assassin) {
 			curBuild = 0;
 		} else if (player.getBuild() instanceof Guard) {
@@ -87,6 +114,7 @@ public class Display extends JPanel {
 			curBuild = 3;
 		}
 
+		// read images
 		try {
 			assassinWeapon = ImageIO.read(new File("res/assassinWeapon.png"));
 			guardWeapon = ImageIO.read(new File("res/guardWeapon.png"));
@@ -103,18 +131,26 @@ public class Display extends JPanel {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+
+		// configure the image painted on Display
 		image = new BufferedImage(SCREEN_WIDTH, SCREEN_HEIGHT, BufferedImage.TYPE_INT_RGB);
 		pixels = ((DataBufferInt)image.getRaster().getDataBuffer()).getData(); // links pixels to image 
 	}
 
+	/**
+	 * getImage
+	 * this method returns the image the player sees
+	 * @return image, image displayed
+	 */
 	public BufferedImage getImage() {
 		return image;
 	}
 
+	@Override
 	public void paintComponent(Graphics g) {
 		if (player.inGame()) {
 			// if the player is respawning
-			if (player.getBuild().getHealth() > 0 && player.getRespawn() <= 0) {
+			if (player.getBuild().getHealth() > 0 && player.getRespawn() <= 0 && player.getX() != -1 && player.getY() != -1) {
 				update();
 
 				// draw the background image
@@ -187,11 +223,11 @@ public class Display extends JPanel {
 				// draw background
 				g.setColor(Color.BLACK);
 				g.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-				
+
 				// draw respawn buffer
 				g.setColor(Color.WHITE);
 				g.fillArc(SCREEN_WIDTH / 2 - CROSSHAIR_LENGTH, SCREEN_HEIGHT / 2 - CROSSHAIR_LENGTH, CROSSHAIR_LENGTH * 2, CROSSHAIR_LENGTH * 2, 90, 360 * player.getRespawn() / 3000);
-				
+
 				// draw elimination message
 				g.setColor(Color.WHITE);
 				g.setFont(logo);
@@ -238,11 +274,17 @@ public class Display extends JPanel {
 				g.drawString(" Soldier", SCREEN_WIDTH * 23 / 50, SCREEN_HEIGHT * 7 / 10);
 			}
 		}
+
+		// recurse and paint again
 		repaint();
 	}
 
-	// recalculates how the screen should look to the user based on their position in the map
-	// returns the updated array of pixels to the Game class
+	/**
+	 * update
+	 * this method recalculates how the screen should look
+	 * to the user based on their position in the map
+	 * also used in Lobby
+	 */
 	public void update() {
 		// clear screen
 		for (int i = 0; i < pixels.length / 2; i++){
@@ -377,26 +419,59 @@ public class Display extends JPanel {
 		}
 	}
 
+	/**
+	 * getExit
+	 * this method returns the exit button
+	 * @return exit, the exit button
+	 */
 	public Button getExit() {
 		return exit;
 	}
-	
+
+	/**
+	 * getPrevBuild
+	 * this method returns the prevBuild button
+	 * @return prevBuild, the prevBuild button
+	 */
 	public Button getPrevBuild() {
 		return prevBuild;
 	}
-	
+
+	/**
+	 * getNextBuild
+	 * this method returns the nextBuild button
+	 * @return nextBuild, the nextBuild button
+	 */
 	public Button getNextBuild() {
 		return nextBuild;
 	}
-	
+
+	/**
+	 * getCurBuild
+	 * this method returns the current build
+	 * @return int curBuild, the current build
+	 */
 	public int getCurBuild() {
 		return curBuild;
 	}
-	
+
+	/**
+	 * getCurBuild
+	 * this method sets the curBuild
+	 * @param curBuild, the new build
+	 */
 	public void setCurBuild(int curBuild) {
 		this.curBuild = curBuild;
 	}
 
+	/**
+	 * dist
+	 * this method calculates the distance between
+	 * two players
+	 * @param a, the first player
+	 * @param b, the second player
+	 * @return b, the distance between them
+	 */
 	private double dist(Player a, Player b) {
 		return Math.sqrt(Math.pow(a.getX() - b.getX(), 2) + Math.pow(a.getY() - b.getY(), 2));
 	}

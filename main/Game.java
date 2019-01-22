@@ -1,3 +1,10 @@
+/**
+ * [Game].java
+ * Game is a class where the game
+ * logic is handled
+ * @author      Yili Liu
+ * @since       Dec.18.2018
+ */
 package main;
 import java.awt.Color;
 import java.awt.Cursor;
@@ -23,10 +30,12 @@ import player.builds.Soldier;
 
 public class Game extends JFrame {
 
-	// Camera
+	// init vars
+
+	// player
 	private Player player;
 
-	// Screen
+	// display
 	private Display display;
 
 	// screen dimensions
@@ -52,10 +61,16 @@ public class Game extends JFrame {
 	// list of players
 	private SimpleLinkedList<Player> players;
 
+	// static final delay of game loop
 	private static final int DELAY = 20;
 
-	// constructor
+	/**
+	 * Game
+	 * constructor
+	 * @param client, client used to communicate to server
+	 */
 	public Game(Client client) {
+		// request focus
 		setFocusable(true);
 		requestFocusInWindow(true);
 
@@ -78,7 +93,7 @@ public class Game extends JFrame {
 		player = client.getPlayer();
 		players = client.getPlayers();
 		map = client.getMap();
-		
+
 		// make new display
 		display = new Display(map, SCREEN_WIDTH, SCREEN_HEIGHT, color, player, players); // screen = new Screen(map, mapWidth, mapHeight, textures, 640, 480)
 
@@ -96,6 +111,7 @@ public class Game extends JFrame {
 		// spawn the player
 		spawnPlayer();
 
+		// enter game loop
 		Thread t = new Thread(new Runnable() {
 			public void run() {
 				loop();
@@ -104,7 +120,11 @@ public class Game extends JFrame {
 		t.start();
 	}
 
-	// public methods
+	/**
+	 * spawnPlayer
+	 * spawns the current player
+	 * in a new location
+	 */
 	public void spawnPlayer() {
 		// init Player
 		int x = 0, y = 0;
@@ -112,7 +132,7 @@ public class Game extends JFrame {
 			x = (int)(Math.random() * map.length);
 			y = (int)(Math.random() * map[0].length);
 		}
-		
+
 		// reset player build
 		if (display.getCurBuild() == 0) {
 			player.setBuild(new Assassin());
@@ -136,7 +156,12 @@ public class Game extends JFrame {
 		player.setReload(0);
 	}
 
-	// private methods
+	/**
+	 * toggleCursor
+	 * toggles the cursor
+	 * from a blank one to a solid
+	 * @param solid, solidity of the cursor
+	 */
 	private void toggleCursor(boolean solid) {
 		Cursor cursor;
 
@@ -149,7 +174,10 @@ public class Game extends JFrame {
 		getContentPane().setCursor(cursor);
 	}
 
-	// game loop
+	/**
+	 * loop
+	 * game loop of the Game
+	 */
 	private void loop() {
 		while (true) {
 			playerStatus();
@@ -166,6 +194,10 @@ public class Game extends JFrame {
 		}
 	}
 
+	/**
+	 * playerStatus
+	 * handles player health and spawning
+	 */
 	private void playerStatus() {
 		if (player.getBuild().getHealth() <= 0) {
 			player.setRespawn(3000);
@@ -180,115 +212,125 @@ public class Game extends JFrame {
 		}
 	}
 
-	// update camera view
+	/**
+	 * updates player values
+	 */
 	private void updatePlayer() {
-		// get player variables
-		boolean forward = player.getForward();
-		boolean left = player.getLeft();
-		boolean back = player.getBack();
-		boolean right = player.getRight();
 
-		double x = player.getX();
-		double y = player.getY();
-		double xDir = player.getXDir();
-		double yDir = player.getYDir();
-		double speed = player.getBuild().getSpeed();
-		double rotation = player.getRotation();
-		double xPlane = player.getXPlane();
-		double yPlane = player.getYPlane();
+		if (player.getX() != -1 && player.getY() != -1) {
+			// get player variables
+			boolean forward = player.getForward();
+			boolean left = player.getLeft();
+			boolean back = player.getBack();
+			boolean right = player.getRight();
 
-		// move player
-		if (forward) {
-			if (map[(int)(x + xDir * speed)][(int)y] == 0) {
-				x += xDir * speed;
+			double x = player.getX();
+			double y = player.getY();
+			double xDir = player.getXDir();
+			double yDir = player.getYDir();
+			double speed = player.getBuild().getSpeed();
+			double rotation = player.getRotation();
+			double xPlane = player.getXPlane();
+			double yPlane = player.getYPlane();
+
+			// move player
+			if (forward) {
+				if (map[(int)(x + xDir * speed)][(int)y] == 0) {
+					x += xDir * speed;
+				}
+				if (map[(int)x][(int)(y + yDir * speed)] == 0) {
+					y += yDir * speed;
+				}
 			}
-			if (map[(int)x][(int)(y + yDir * speed)] == 0) {
-				y += yDir * speed;
+			if (back) {
+				if (map[(int)(x - xDir * speed)][(int)y] == 0) {
+					x -= xDir * speed;
+				}
+				if (map[(int)x][(int)(y - yDir * speed)] == 0) {
+					y -= yDir * speed;
+				}
 			}
-		}
-		if (back) {
-			if (map[(int)(x - xDir * speed)][(int)y] == 0) {
-				x -= xDir * speed;
+
+			// reduced speed on strafing
+			if (left) {
+				if (map[(int)(x - xPlane * speed)][(int)y] == 0) {
+					x -= xPlane * speed;
+				}
+				if (map[(int)x][(int)(y - yPlane * speed)] == 0) {
+					y -= yPlane * speed;
+				}
 			}
-			if (map[(int)x][(int)(y - yDir * speed)] == 0) {
-				y -= yDir * speed;
+			if (right) {
+				if (map[(int)(x + xPlane * speed)][(int)y] == 0) {
+					x += xPlane * speed;
+				}
+				if (map[(int)x][(int)(y + yPlane * speed)] == 0) {
+					y += yPlane * speed;
+				}
 			}
-		}
 
-		// reduced speed on strafing
-		if (left) {
-			if (map[(int)(x - xPlane * speed)][(int)y] == 0) {
-				x -= xPlane * speed;
+			// camera rotation
+			double oldxDir = xDir;
+			xDir = xDir * Math.cos(rotation) - yDir * Math.sin(rotation);
+			yDir = oldxDir * Math.sin(rotation) + yDir * Math.cos(rotation);
+
+			double oldxPlane = xPlane;
+			xPlane = xPlane * Math.cos(rotation) - yPlane * Math.sin(rotation);
+			yPlane = oldxPlane * Math.sin(rotation) + yPlane * Math.cos(rotation);
+
+			player.setX(x);
+			player.setY(y);
+			player.setXDir(xDir);
+			player.setYDir(yDir);
+			player.setXPlane(xPlane);
+			player.setYPlane(yPlane);
+			if (player.getReload() > 0) {
+				player.setReload(player.getReload() - DELAY);
+				if (player.getReload() <= 0) {
+					player.getBuild().setAmmo(player.getBuild().getMaxAmmo());
+				}
 			}
-			if (map[(int)x][(int)(y - yPlane * speed)] == 0) {
-				y -= yPlane * speed;
-			}
-		}
-		if (right) {
-			if (map[(int)(x + xPlane * speed)][(int)y] == 0) {
-				x += xPlane * speed;
-			}
-			if (map[(int)x][(int)(y + yPlane * speed)] == 0) {
-				y += yPlane * speed;
-			}
-		}
 
-		// camera rotation
-		double oldxDir = xDir;
-		xDir = xDir * Math.cos(rotation) - yDir * Math.sin(rotation);
-		yDir = oldxDir * Math.sin(rotation) + yDir * Math.cos(rotation);
+			mouseMoved();
+			mousePressed();
 
-		double oldxPlane = xPlane;
-		xPlane = xPlane * Math.cos(rotation) - yPlane * Math.sin(rotation);
-		yPlane = oldxPlane * Math.sin(rotation) + yPlane * Math.cos(rotation);
+			for (int i = 0; i < player.getBullets().size(); i++) {
+				Bullet bullet = player.getBullets().get(i);
+				bullet.setX(bullet.getX() + bullet.getXDir() * 0.1);
+				bullet.setY(bullet.getY() + bullet.getYDir() * 0.1);
 
-		player.setX(x);
-		player.setY(y);
-		player.setXDir(xDir);
-		player.setYDir(yDir);
-		player.setXPlane(xPlane);
-		player.setYPlane(yPlane);
-		if (player.getReload() > 0) {
-			player.setReload(player.getReload() - DELAY);
-			if (player.getReload() <= 0) {
-				player.getBuild().setAmmo(player.getBuild().getMaxAmmo());
-			}
-		}
+				double bx = bullet.getX();
+				double by = bullet.getY();
 
-		mouseMoved();
-		mousePressed();
+				if (map[(int)(bx)][(int)(by)] != 0 || bx < 0 || bx > map.length || by < 0 || by > map[0].length) {
+					System.out.println("hit wall");
+					player.getBullets().remove(i);
+					i--;
 
-		for (int i = 0; i < player.getBullets().size(); i++) {
-			Bullet bullet = player.getBullets().get(i);
-			bullet.setX(bullet.getX() + bullet.getXDir() * 0.1);
-			bullet.setY(bullet.getY() + bullet.getYDir() * 0.1);
+				} else {
+					int j = 0;
+					boolean hit = false;
+					while (!hit && j < players.size()) {
+						if (bullet.collides(players.get(j))) {
+							client.println("hit " + players.get(j).getName() + " " + player.getBuild().getDamage() + " " + player.getName());
+							player.getBullets().remove(i);
+							i--;
 
-			double bx = bullet.getX();
-			double by = bullet.getY();
-
-			if (map[(int)(bx)][(int)(by)] != 0 || bx < 0 || bx > map.length || by < 0 || by > map[0].length) {
-				System.out.println("hit wall");
-				player.getBullets().remove(i);
-				i--;
-
-			} else {
-				int j = 0;
-				boolean hit = false;
-				while (!hit && j < players.size()) {
-					if (bullet.collides(players.get(j))) {
-						client.println("hit " + players.get(j).getName() + " " + player.getBuild().getDamage() + " " + player.getName());
-						player.getBullets().remove(i);
-						i--;
-
-						System.out.println("hit " + players.get(j).getName());
-						hit = true;
+							System.out.println("hit " + players.get(j).getName());
+							hit = true;
+						}
+						j++;
 					}
-					j++;
 				}
 			}
 		}
 	}
 
+	/**
+	 * mouseMoved
+	 * get mouse location
+	 * and rotate player
+	 */
 	private void mouseMoved() {
 		// get current x position of the cursor
 		int curx = (int)(MouseInfo.getPointerInfo().getLocation().getX());
@@ -301,6 +343,11 @@ public class Game extends JFrame {
 		player.getRobot().mouseMove((curx + SCREEN_WIDTH / 2) / 2, SCREEN_HEIGHT / 2);
 	}
 
+	/**
+	 * mousePressed
+	 * change player clicked
+	 * and update bullets
+	 */
 	private void mousePressed() {
 		if (player.getClickedLeft() && System.currentTimeMillis() - player.getLastFired() > player.getBuild().getFireRate() && player.getReload() <= 0) {
 			Bullet bullet = new Bullet(player.getX(), player.getY(), player.getXDir(), player.getYDir());
@@ -320,6 +367,7 @@ public class Game extends JFrame {
 		@Override
 		public void mousePressed(MouseEvent e) {
 			if (player.inGame()) {
+				// set player clicked
 				int button = e.getButton();
 				if (button == MouseEvent.BUTTON1) {
 					player.setClickedLeft(true);
@@ -327,11 +375,16 @@ public class Game extends JFrame {
 					player.setClickedRight(true);
 				}
 			} else {
+				// get mouse location
 				double x = e.getPoint().getX();
 				double y = e.getPoint().getY();
+
+				// disconnect
 				if (display.getExit().clicked(x, y)) {
 					client.disconnect();
 					dispose();
+
+					// update player build
 				} else if (display.getPrevBuild().clicked(x, y) || display.getNextBuild().clicked(x, y)) {
 					if (display.getPrevBuild().clicked(x, y)) {
 						if (display.getCurBuild() > 0) {
@@ -377,6 +430,7 @@ public class Game extends JFrame {
 
 		@Override
 		public void keyPressed(KeyEvent e) {
+			// set new player info
 			int key = e.getKeyCode();
 
 			if (key == KeyEvent.VK_W) {
@@ -389,7 +443,6 @@ public class Game extends JFrame {
 				player.setRight(true);
 			} else if (key == KeyEvent.VK_R) {
 				player.setReload(1000);
-				// spawnPlayer();
 			} else if (key == KeyEvent.VK_ESCAPE) {
 				player.setRotation(0);
 				player.setInGame(!player.inGame());
@@ -409,6 +462,7 @@ public class Game extends JFrame {
 
 		@Override
 		public void keyReleased(KeyEvent e) {
+			// set new player booleans
 			int key = e.getKeyCode();
 
 			if (key == KeyEvent.VK_W) {

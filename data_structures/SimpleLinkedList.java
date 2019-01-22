@@ -1,8 +1,23 @@
+/**
+ * [SimpleLinkedList].java
+ * SimpleLinkedList is a simple linked list
+ * data structure, stores Nodes in a one
+ * dimensional fashion
+ * @author      Yili Liu
+ * @since       Dec.18.2018
+ */
 package data_structures;
 
 public class SimpleLinkedList<E> {
+	// init vars
 	private Node<E> head;
 
+	/**
+	 * contains
+	 * this method returns whether this linkedlist contains an item
+	 * @param item, the item user checks
+	 * @return b, if this data structure contains a certain item
+	 */
 	public boolean contains(E item) {
 		Node<E> cur = head;
 		if (cur == null) {
@@ -18,6 +33,11 @@ public class SimpleLinkedList<E> {
 		return false;
 	}
 
+	/**
+	 * add
+	 * this method adds a new item to the data structure
+	 * @param item, item to be added
+	 */
 	public void add(E item) {
 		if (head == null) {
 			head = new Node<E>(item);
@@ -32,6 +52,12 @@ public class SimpleLinkedList<E> {
 		}
 	}
 
+	/**
+	 * add
+	 * this method adds a new item to the data structure at a certain index
+	 * @param index, the position for the item to be added
+	 * @param item, item to be added
+	 */
 	public void add(int index, E item) {
 		if (index == 0) {
 			Node<E> n = new Node<E>(item);
@@ -48,6 +74,12 @@ public class SimpleLinkedList<E> {
 		}
 	}
 
+	/**
+	 * remove
+	 * this method removes an item from the data structure
+	 * @param item, item to be removed
+	 * @return boolean b, if the data structure originally contained the item
+	 */
 	public boolean remove(E item) {
 		if (head == null) {
 			return false;
@@ -69,6 +101,12 @@ public class SimpleLinkedList<E> {
 		return false;
 	}
 
+	/**
+	 * remove
+	 * this method removes an item at an index
+	 * @param index, index of the item to be removed
+	 * @return item, item removed
+	 */
 	public E remove(int index) {
 		if (index == 0) {
 			E item = head.getItem();
@@ -84,7 +122,13 @@ public class SimpleLinkedList<E> {
 			return n.getItem();
 		}
 	}
-
+	
+	/**
+	 * get
+	 * this method returns the item at a given index
+	 * @param index, the index of the item
+	 * @return item, the item at a certain index
+	 */
 	public E get(int index) {
 		Node<E> last = head;
 		for (int i = 0; i < index; i++) {
@@ -93,6 +137,12 @@ public class SimpleLinkedList<E> {
 		return last.getItem();
 	}
 
+	/**
+	 * indexOf
+	 * this method returns the first index of a given item
+	 * @param item, item to be checked
+	 * @return index, first index of the given item
+	 */
 	public int indexOf(E item) {
 		int count = 0;
 		Node<E> cur = head;
@@ -107,10 +157,19 @@ public class SimpleLinkedList<E> {
 		return -1;
 	}
 
+	/**
+	 * clear
+	 * this method clears the linkedlist
+	 */
 	public void clear() {
 		head = null;
 	}
 
+	/**
+	 * size
+	 * this method returns the size of the list
+	 * @return size, number of elements in this list
+	 */
 	public int size() {
 		int count = 0;
 		Node<E> cur = head;
@@ -123,6 +182,11 @@ public class SimpleLinkedList<E> {
 		return count;
 	}
 
+	/**
+	 * toString
+	 * this method returns all the elements in this list as a string
+	 * @return s, representing all items in the list
+	 */
 	public String toString() {
 		String s = "[";
 		Node<E> cur = head;
@@ -139,6 +203,11 @@ public class SimpleLinkedList<E> {
 		return s;
 	}
 	
+	/**
+	 * isEmpty
+	 * this method returns whether or not this data structure has no elements
+	 * @return b, whether or not this data structure is empty
+	 */
 	public boolean isEmpty() {
 		if (head == null) {
 			return true;

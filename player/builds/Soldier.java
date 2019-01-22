@@ -1,9 +1,20 @@
+/**
+ * [Soldier].java
+ * Soldier is a subclass of Build
+ * that is most well rounded
+ * @author      Yili Liu
+ * @since       Dec.18.2018
+ */
 package player.builds;
 
 public class Soldier extends Build {
 
-	// constructor
+	/**
+	 * Soldier
+	 * constructor
+	 */
 	public Soldier() {
+		// set build values
 		this.maxHealth = 2200;
 		this.health = maxHealth;
 		this.speed = 0.06;
@@ -14,3 +25,5 @@ public class Soldier extends Build {
 		this.zoom = 0.15;
 	}
 }
+
+

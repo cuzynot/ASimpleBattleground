@@ -1,3 +1,10 @@
+/**
+ * [Lobby].java
+ * Lobby inits a lobby class
+ * to connect to the server
+ * @author      Yili Liu
+ * @since       Dec.18.2018
+ */
 package main;
 
 import java.awt.Color;
@@ -25,27 +32,30 @@ import player.builds.Soldier;
 
 public class Lobby {
 
+	// init vars
+	// final values
 	private final int SCREEN_WIDTH;
 	private final int SCREEN_HEIGHT;
 	private final double ROTATE_SPEED;
 
-	//	private int counter;
-	//	private boolean side;
-
+	// client
 	private Client client;
-	// private Game game;
 
+	// images
 	private BufferedImage image;
 	private static BufferedImage assassinIcon;
 	private static BufferedImage guardIcon;
 	private static BufferedImage sniperIcon;
 	private static BufferedImage soldierIcon;
 
+	// player
 	private Player player;
 
+	// frame and panel
 	private JFrame frame;
 	private LobbyPanel panel;
 
+	// graphical components
 	private Field ip;
 	private Field port;
 	private Field name;
@@ -54,22 +64,35 @@ public class Lobby {
 	private Button prevBuild;
 	private Button nextBuild;
 
+	// misc
 	private int curBuild;
 	private int curString;
 	private int counter;
 	private String errorMsg;
 
+	// graphics
 	private Color color;
 	private Color alt;
 	private Display display;
 
+	// listeners
 	private LobbyKeyListener lkl;
 	private LobbyMouseListener lml;
 
+	/**
+	 * main
+	 * main method
+	 * makes a new lobby
+	 * @param args, necessary for main method
+	 */
 	public static void main(String[] args) {
 		new Lobby();
 	}
 
+	/**
+	 * Lobby
+	 * constructor
+	 */
 	Lobby() {
 		// set var values
 		SCREEN_WIDTH = (int)(Toolkit.getDefaultToolkit().getScreenSize().getWidth());
@@ -89,6 +112,7 @@ public class Lobby {
 		alt = new Color((int)(Math.random() * 255), (int)(Math.random() * 255), (int)(Math.random() * 255));
 		errorMsg = "";
 
+		// load images
 		try {
 			assassinIcon = ImageIO.read(new File("res/assassinIcon.png"));
 			guardIcon = ImageIO.read(new File("res/guardIcon.png"));
@@ -98,6 +122,7 @@ public class Lobby {
 			e.printStackTrace();
 		}
 
+		// lobby map for display
 		int[][] map = {
 				{1, 1, 1, 1, 1},
 				{1, 0, 0, 0, 1},
@@ -105,6 +130,7 @@ public class Lobby {
 				{1, 0, 0, 0, 1},
 				{1, 1, 1, 1, 1},
 		};
+		// makew new player and display
 		player = new Player("null", 2.5, 2.5, 1, 0, 0, -1);
 		display = new Display(map, SCREEN_WIDTH, SCREEN_HEIGHT, color, player, null);
 		image = display.getImage();
@@ -126,6 +152,7 @@ public class Lobby {
 		frame.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
 		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
+		// lobby loop
 		while (true) {
 			updatePlayer();
 
@@ -137,6 +164,10 @@ public class Lobby {
 		}
 	}
 
+	/**
+	 * updatePlayer
+	 * this method updates player camera
+	 */
 	private void updatePlayer() {
 		// camera rotation
 		double xDir = player.getXDir();
@@ -158,8 +189,13 @@ public class Lobby {
 		player.setYPlane(yPlane);
 	}
 
+	/**
+	 * enterGame
+	 * this method makes new client
+	 * and game objects and 
+	 * enters a new game
+	 */
 	private void enterGame() {
-		// System.out.println("connecting to " + ip.getString() + " " + port.getString() + " " + name.getString());
 		try {
 			client = new Client(ip.getString(), Integer.parseInt(port.getString()), name.getString(), curBuild);
 			frame.dispose();
@@ -168,13 +204,15 @@ public class Lobby {
 			errorMsg = "PORT MUST BE A NUMBER";
 		} catch (DuplicateException e) {
 			errorMsg = "    DUPLICATE NAME   ";
-			//		} catch (IOException e) {
-			//			errorMsg = " INCORRECT IP ADDRESS";
 		} catch (Exception e) {
 			errorMsg = "  CONNECTION REFUSED ";
 		}
 	}
 
+	/**
+	 * LobbyKeyListener
+	 * private key listener
+	 */
 	private class LobbyKeyListener implements KeyListener {
 		@Override
 		public void keyPressed(KeyEvent e) {
@@ -190,6 +228,7 @@ public class Lobby {
 			}
 
 			if (key == KeyEvent.VK_BACK_SPACE) {
+				// truncate fields
 				if (s.length() > 0) {
 					if (curString == 0) {
 						ip.setString(s.substring(0, s.length() - 1));
@@ -200,9 +239,10 @@ public class Lobby {
 					}
 				}
 			} else if (key == KeyEvent.VK_ENTER) {
+				// enter new game
 				enterGame();
 			} else if (key != KeyEvent.VK_SPACE) {
-				// } else if ((key != KeyEvent.VK_SHIFT) && (key != KeyEvent.VK_CONTROL) && (key != KeyEvent.VK_ALT)) {
+				// append to fields
 				char c = e.getKeyChar();
 
 				if (curString == 0) {
@@ -225,8 +265,12 @@ public class Lobby {
 		public void keyTyped(KeyEvent e) {}
 		@Override
 		public void keyReleased(KeyEvent e) {}
-	}
+	} // end of key listener
 
+	/**
+	 * LobbyMouseListener
+	 * private mouse listener
+	 */
 	private class LobbyMouseListener implements MouseListener {
 		@Override
 		public void mousePressed(MouseEvent e) {
@@ -268,9 +312,14 @@ public class Lobby {
 		public void mouseEntered(MouseEvent e) {}
 		@Override
 		public void mouseExited(MouseEvent e) {}
-	}
+	} // end of mouse listener
 
+	/**
+	 * LobbyPanel
+	 * private panel
+	 */
 	private class LobbyPanel extends JPanel {
+		// init vars
 		private Font fields;
 		private Font logo;
 		private int ipStringY;
@@ -278,6 +327,10 @@ public class Lobby {
 		private int nameStringY;
 		private final int OFFSET;
 
+		/**
+		 * LobbyPanel
+		 * constructor
+		 */
 		LobbyPanel() {
 			OFFSET = 10;
 			logo = new Font("Helvetica", Font.BOLD | Font.ITALIC, SCREEN_WIDTH / 15);
@@ -288,6 +341,7 @@ public class Lobby {
 		}
 
 		public void paintComponent(Graphics g) {
+			// update background image
 			display.update();
 
 			// draw background rotating image
@@ -314,7 +368,6 @@ public class Lobby {
 			}
 
 			// draw enter button
-			// g.fillOval(SCREEN_WIDTH / 2, (int)(SCREEN_HEIGHT / 1.5), SCREEN_WIDTH / 50, SCREEN_WIDTH / 50);
 			g.setColor(alt);
 			g.setFont(fields);
 			g.drawString(enter.getString(), enter.getX1(), enter.getY2() - OFFSET);
@@ -375,6 +428,7 @@ public class Lobby {
 				counter += 40;
 			}
 
+			// recurse and repaint panel
 			repaint();
 		}
 	}
